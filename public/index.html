@@ -112,10 +112,10 @@
                     <div id="school-container" class="transition-all"><input type="text" id="schoolName" placeholder="School Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500"></div>
                     <div id="id-upload-container" class="hidden border-2 border-dashed border-purple-500/50 bg-purple-900/20 p-6 rounded-xl text-center">
                         <p class="text-sm font-semibold text-purple-300 mb-2">Upload School/College ID</p>
-                        <input type="file" id="idCard" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white cursor-pointer">
+                        <input type="file" id="idCard" accept="image/jpeg,image/png,image/webp" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white cursor-pointer">
                     </div>
                     
-                    <!-- New Minor Consent Fields (No ID Upload) -->
+                    <!-- Parent consent replaces student ID verification for minors. -->
                     <div id="minor-fields" class="hidden space-y-4 border-t border-slate-700 pt-4">
                         <p class="text-sm font-bold text-purple-400">Parent Consent Required</p>
                         <input type="text" id="parentName" placeholder="Parent's Legal Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
@@ -197,16 +197,15 @@
                             <!-- Project UTR Funding Box -->
                             <div id="ws-payment-box" class="hidden bg-slate-900/80 p-5 rounded-2xl border border-blue-500/50 mb-6 text-center">
                                 <h4 class="font-bold text-blue-400 mb-2">Fund Escrow via UPI</h4>
-                                <div class="bg-white p-2 w-32 h-32 mx-auto mb-2 rounded-lg flex items-center justify-center text-slate-400 text-xs text-center border-2 border-dashed border-slate-300">
-                                    [Your QR Code Here]
-                                </div>
-                                <p class="text-xs text-slate-400 mb-2">UPI ID: admin@upi</p>
+                                <p class="text-xs text-slate-400 mb-2">UPI ID: <span id="escrow-upi-id" class="font-bold text-white">Not configured</span></p>
                                 <p class="text-xs text-slate-400 mb-4">Transfer the exact project budget and paste the 12-digit UTR below.</p>
-                                <input type="text" id="payment-utr" placeholder="12-digit UTR Number" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white mb-4" maxlength="12">
+                                <input type="text" id="payment-utr" inputmode="numeric" pattern="[0-9]{12}" placeholder="12-digit UTR Number" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white mb-4" maxlength="12">
                                 <button onclick="submitUtrFunding()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-500 shadow transition">Confirm Transfer</button>
                             </div>
 
-                            <div id="ws-dev-payment-waiting" class="hidden bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/50 mb-6 text-center"><p class="text-sm font-bold text-yellow-400">Awaiting Buyer Confirmation</p><p class="text-xs text-slate-400 mt-1">Do not start working until funds are confirmed.</p></div>
+                            <div id="ws-buyer-payment-waiting" class="hidden bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/50 mb-6 text-center"><p class="text-sm font-bold text-yellow-400">Funding confirmation pending</p><p class="text-xs text-slate-400 mt-1">The project can start after an admin verifies the UTR.</p></div>
+                            <div id="ws-dev-payment-waiting" class="hidden bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/50 mb-6 text-center"><p class="text-sm font-bold text-yellow-400">Awaiting Buyer Funding</p><p class="text-xs text-slate-400 mt-1">Do not start working until funds are confirmed.</p></div>
+                            <div id="ws-dev-funding-waiting" class="hidden bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/50 mb-6 text-center"><p class="text-sm font-bold text-yellow-400">UTR submitted</p><p class="text-xs text-slate-400 mt-1">An admin must verify the payment before work begins.</p></div>
                             
                             <div id="ws-dev-actions" class="hidden space-y-4">
                                 <h4 class="font-bold text-white mb-2 border-b border-slate-700 pb-2">Dev Tools</h4>
@@ -214,16 +213,17 @@
                                 <button onclick="submitWork()" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-400">Submit Work</button>
                                 <div id="ws-dev-payout-area" class="mt-4 pt-4 border-t border-slate-700 hidden"></div>
                             </div>
+                            <div id="ws-dev-review-waiting" class="hidden bg-purple-900/20 p-4 rounded-xl border border-purple-700/50 mb-6 text-center"><p class="text-sm font-bold text-purple-300">Delivery submitted</p><p class="text-xs text-slate-400 mt-1">Waiting for the buyer to review your work.</p></div>
                             
                             <div id="ws-buyer-actions" class="hidden space-y-4">
                                 <h4 class="font-bold text-white mb-2 border-b border-slate-700 pb-2">Review Delivery</h4>
                                 <div id="ws-deliverable-box" class="hidden bg-slate-900/80 p-4 rounded-xl border border-slate-700">
                                     <p class="text-sm font-bold text-white mb-1">Work Submitted:</p>
-                                    <a href="#" id="ws-deliverable-link" target="_blank" class="text-sm text-blue-400 hover:underline break-all">View Link</a>
+                                    <a href="#" id="ws-deliverable-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-400 hover:underline break-all">View Link</a>
                                 </div>
                                 <div id="ws-review-box" class="hidden mt-4 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
                                     <p class="text-sm font-bold text-white mb-2">Approve & Release Funds</p>
-                                    <select id="ws-review-score" class="w-full mb-2 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="1">⭐</option></select>
+                                    <select id="ws-review-score" class="w-full mb-2 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select>
                                     <textarea id="ws-review-text" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white h-24 mb-2"></textarea>
                                     <button onclick="completeJob()" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-500">Approve</button>
                                 </div>
@@ -258,7 +258,7 @@
                     
                     <div class="flex space-x-2 border-b border-slate-700 mb-6 overflow-x-auto">
                         <button onclick="switchPaymentSubTab('wallet')" id="subtab-wallet" class="px-6 py-3 font-bold text-white border-b-2 border-blue-500 bg-slate-800/50 rounded-t-lg">Wallet</button>
-                        <button onclick="switchPaymentSubTab('invoice')" id="subtab-invoice" class="px-6 py-3 font-bold text-slate-400 hover:text-white">Invoices</button>
+                        <button onclick="switchPaymentSubTab('invoice')" id="subtab-invoice" class="px-6 py-3 font-bold text-slate-400 hover:text-white">Transaction History</button>
                     </div>
 
                     <div id="view-wallet" class="payment-view space-y-4">
@@ -294,14 +294,14 @@
                             <input type="text" id="edit-name" placeholder="Full Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
                             <input type="email" id="edit-email" placeholder="Email Address" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
                             <input type="tel" id="edit-phone" placeholder="Phone Number" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
-                            <input type="date" id="edit-dob" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
+                            <input type="date" id="edit-dob" readonly title="Date of birth cannot be changed after registration" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-slate-400 outline-none cursor-not-allowed">
                             <div id="edit-dev-fields" class="space-y-4 border-t border-slate-700 pt-4">
                                 <p class="text-sm font-bold text-blue-400">Developer Info</p>
                                 <input type="text" id="edit-school" placeholder="School Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white">
                                 <input type="text" id="edit-grade" placeholder="Standard / Year" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white">
                                 <div class="border-2 border-dashed border-slate-600 bg-slate-800/30 p-4 rounded-xl">
                                     <p class="text-xs text-slate-400 mb-2">Update ID Card</p>
-                                    <input type="file" id="edit-idCard" accept="image/*" class="w-full text-xs text-slate-400">
+                                    <input type="file" id="edit-idCard" accept="image/jpeg,image/png,image/webp" class="w-full text-xs text-slate-400">
                                 </div>
                             </div>
                             <div id="edit-upi-fields" class="space-y-2 border-t border-slate-700 pt-4">
@@ -333,7 +333,7 @@
                 <div class="glass-card rounded-2xl overflow-hidden">
                     <table class="w-full text-left">
                         <thead class="bg-slate-800/50 border-b border-slate-700">
-                            <tr><th class="p-4">User & Parent Details</th><th class="p-4">School & Contact</th><th class="p-4">ID Cards</th><th class="p-4">Action</th></tr>
+                            <tr><th class="p-4">User Details</th><th class="p-4">School & Contact</th><th class="p-4">Student ID</th><th class="p-4">Action</th></tr>
                         </thead>
                         <tbody id="admin-pending-list" class="divide-y divide-slate-700/50"></tbody>
                     </table>
@@ -356,7 +356,7 @@
     </div>
 
     <!-- OTP VERIFICATION MODAL -->
-    <div id="otp-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-[120] p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center"><h3 class="text-2xl font-bold text-white mb-2">Verify Phone Number</h3><p class="text-slate-400 mb-6 text-sm">We sent a 4-digit code to your WhatsApp.</p><input type="text" id="otp-input" placeholder="0000" maxlength="4" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-center text-2xl font-bold text-white tracking-widest outline-none mb-6 focus:border-blue-500"><button onclick="verifyPhoneOtp()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">Verify & Login</button><button onclick="closeModals()" class="mt-4 text-sm text-slate-500 hover:text-white">Cancel</button></div></div>
+    <div id="otp-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-[120] p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center"><h3 class="text-2xl font-bold text-white mb-2">Verify Phone Number</h3><p class="text-slate-400 mb-6 text-sm">We sent a 4-digit code to your WhatsApp.</p><input type="text" id="otp-input" inputmode="numeric" pattern="[0-9]{4}" placeholder="0000" maxlength="4" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-center text-2xl font-bold text-white tracking-widest outline-none mb-6 focus:border-blue-500"><button onclick="verifyPhoneOtp()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">Verify Phone</button><button onclick="resendPhoneOtp()" class="mt-4 text-sm text-blue-400 hover:text-white">Resend code</button><button onclick="closeModals()" class="block mx-auto mt-4 text-sm text-slate-500 hover:text-white">Cancel</button></div></div>
 
     <!-- UI MODALS -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[110] backdrop-blur-sm p-4"><div class="glass-modal p-8 rounded-3xl max-w-sm w-full text-center"><h3 id="confirm-title" class="text-2xl font-bold text-white mb-2">Are you sure?</h3><p id="confirm-text" class="text-slate-400 mb-6 text-sm">This action cannot be undone.</p><div class="flex justify-center space-x-4"><button onclick="closeConfirmModal()" class="px-6 py-2 rounded-xl text-slate-300 bg-slate-800 hover:bg-slate-700 font-bold">Cancel</button><button id="confirm-yes-btn" onclick="if(confirmAction) confirmAction(); closeConfirmModal();" class="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold">Yes</button></div></div></div>
@@ -365,25 +365,54 @@
 
     <div id="feedback-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl shadow-2xl max-w-md w-full relative"><button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-white font-bold text-2xl">&times;</button><h2 class="text-2xl font-extrabold mb-2 text-white">Help Us Improve</h2><div class="space-y-4"><select id="feedback-type" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white"><option value="Bug">🐛 Report a Bug</option><option value="Improvement">✨ Suggest an Improvement</option></select><textarea id="feedback-message" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl h-32 text-white"></textarea><button onclick="submitFeedback()" class="w-full bg-blue-600 text-white rounded-xl font-bold py-3">Submit Feedback</button></div></div></div>
     
-    <div id="forgot-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl max-w-md w-full relative"><button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-white font-bold text-2xl">&times;</button><h3 class="text-2xl font-bold mb-2 text-white">Recover Password</h3><div id="forgot-step-1"><p class="text-slate-400 mb-6 text-sm">Enter email to generate token.</p><input type="email" id="forgot-email" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><button onclick="requestResetToken()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Get Token</button></div><div id="forgot-step-2" class="hidden"><p class="text-slate-400 mb-6 text-sm">Paste token from server terminal.</p><input type="text" id="reset-token" placeholder="Token" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><input type="password" id="reset-new-pass" placeholder="New Password" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><button onclick="submitNewPassword()" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl">Update Password</button></div></div></div>
+    <div id="forgot-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl max-w-md w-full relative"><button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-white font-bold text-2xl">&times;</button><h3 class="text-2xl font-bold mb-2 text-white">Recover Password</h3><div id="forgot-step-1"><p class="text-slate-400 mb-6 text-sm">Enter your email address. If an account exists, we'll send a reset link.</p><input type="email" id="forgot-email" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><button onclick="requestResetToken()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Send Reset Link</button></div><div id="forgot-step-2" class="hidden"><p class="text-slate-400 mb-6 text-sm">Choose a new password.</p><input type="hidden" id="reset-token"><input type="password" id="reset-new-pass" minlength="8" placeholder="New Password (at least 8 characters)" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><button onclick="submitNewPassword()" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl">Update Password</button></div></div></div>
     
     <div id="profile-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-md w-full relative"><button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl">&times;</button><h3 id="prof-name" class="text-2xl font-black text-white"></h3><p id="prof-school" class="text-sm text-slate-400 mb-4"></p><div class="flex gap-4 mb-4 text-sm text-slate-300"><div><span id="prof-followers" class="font-bold text-white">0</span> Followers</div><div><span id="prof-following" class="font-bold text-white">0</span> Following</div></div><div id="prof-follow-btn-container"></div><div class="flex items-center space-x-2 my-6"><span class="text-yellow-400 text-xl">★</span><span id="prof-rating" class="font-black text-xl text-white"></span><span class="text-sm text-slate-400" id="prof-jobs-count"></span></div><div id="prof-reviews" class="space-y-3 max-h-60 overflow-y-auto chat-scroll pr-2"></div></div></div>
     
-    <div id="bid-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-md w-full"><h3 class="text-2xl font-bold mb-4 text-white">Place Bid</h3><input type="hidden" id="bid-job-id"><input type="number" id="bid-amount" oninput="calculateFee()" placeholder="₹ Amount" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl mb-2 text-white"><p id="bid-fee-text" class="text-xs text-slate-400 mb-4 hidden font-bold"></p><textarea id="bid-message" placeholder="Why hire me?" class="w-full px-4 py-3 bg-slate-800/50 text-white rounded-xl h-24 mb-6"></textarea><div class="flex justify-end space-x-3"><button onclick="closeModals()" class="px-5 py-2 rounded-xl text-slate-400">Cancel</button><button onclick="submitBid()" class="px-5 py-2 rounded-xl bg-blue-600 text-white font-bold">Submit Bid</button></div></div></div>
+    <div id="bid-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-md w-full"><h3 class="text-2xl font-bold mb-4 text-white">Place Bid</h3><input type="hidden" id="bid-job-id"><input type="number" id="bid-amount" min="1" step="1" oninput="calculateFee()" placeholder="₹ Amount" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl mb-2 text-white"><p id="bid-fee-text" class="text-xs text-slate-400 mb-4 hidden font-bold"></p><textarea id="bid-message" placeholder="Why should the client hire you?" class="w-full px-4 py-3 bg-slate-800/50 text-white rounded-xl h-24 mb-6"></textarea><div class="flex justify-end space-x-3"><button onclick="closeModals()" class="px-5 py-2 rounded-xl text-slate-400">Cancel</button><button onclick="submitBid()" class="px-5 py-2 rounded-xl bg-blue-600 text-white font-bold">Submit Bid</button></div></div></div>
     
     <div id="view-bids-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-lg w-full max-h-[80vh] flex flex-col"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold text-white">Review Bids</h3><button onclick="closeModals()" class="text-slate-400 hover:text-white font-bold text-2xl">&times;</button></div><div id="bids-list" class="overflow-y-auto flex-1 space-y-4 pr-2"></div></div></div>
     
     <div id="report-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-md w-full"><h3 class="text-2xl font-bold text-red-500 mb-2">Report Profile</h3><label class="block text-slate-400 mb-4 text-sm">Please provide a reason for reporting this user.</label><input type="hidden" id="report-user-id"><textarea id="report-reason" class="w-full px-4 py-3 bg-slate-800/50 text-white border border-slate-700 rounded-xl h-24 mb-6"></textarea><div class="flex justify-end space-x-3"><button onclick="closeModals()" class="px-5 py-2 rounded-xl text-slate-400">Cancel</button><button onclick="submitReport()" class="px-5 py-2 rounded-xl bg-red-600 text-white font-bold">Send Report</button></div></div></div>
 
     <script>
-        let isLogin = true; let currentUser = null; let currentWorkspaceJobId = null; let chatInterval = null; let confirmAction = null; let tempLoginEmail = ''; let isMinorRoute = false;
+        let isLogin = true; let currentUser = null; let currentWorkspaceJobId = null; let chatInterval = null; let confirmAction = null; let tempLoginEmail = ''; let isMinorRoute = false; let profilePhoneVerificationPending = false;
         const apiHeaders = { 'Content-Type': 'application/json' };
 
-        function showToast(msg, type='success'){ const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`${type==='error'?'bg-red-500/90 border-red-400':'bg-slate-800/90 border-slate-600'} border backdrop-blur-md text-white px-6 py-3 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] font-medium transform transition-all duration-300 opacity-0 translate-y-4 flex items-center`; t.innerHTML=`${type==='error'?'⚠️':'✅'} &nbsp; ${msg}`; c.appendChild(t); requestAnimationFrame(()=>t.classList.remove('opacity-0','translate-y-4')); setTimeout(()=>{t.classList.add('opacity-0','translate-y-4'); setTimeout(()=>t.remove(),300);},4000); }
+        function escapeHtml(value){ return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
+        function showToast(msg, type='success'){ const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`${type==='error'?'bg-red-500/90 border-red-400':'bg-slate-800/90 border-slate-600'} border backdrop-blur-md text-white px-6 py-3 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] font-medium transform transition-all duration-300 opacity-0 translate-y-4 flex items-center`; t.textContent=`${type==='error'?'⚠️':'✅'}  ${msg}`; c.appendChild(t); requestAnimationFrame(()=>t.classList.remove('opacity-0','translate-y-4')); setTimeout(()=>{t.classList.add('opacity-0','translate-y-4'); setTimeout(()=>t.remove(),300);},4000); }
         function closeModals(){ document.querySelectorAll('.fixed.inset-0').forEach(e=>e.classList.add('hidden')); if(chatInterval) clearInterval(chatInterval); }
         function customConfirm(title, text, onConfirm) { document.getElementById('confirm-title').innerText = title; document.getElementById('confirm-text').innerText = text; confirmAction = onConfirm; document.getElementById('confirm-modal').classList.remove('hidden'); }
         function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); confirmAction = null; }
         function getToken(){ return localStorage.getItem('token'); }
+        async function apiRequest(url, options={}) {
+            const response = await fetch(url, options);
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
+            return data;
+        }
+        function reportRequestError(error){ showToast(error.message || 'Request failed. Please try again.', 'error'); }
+        function ageFromDate(value){
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return null;
+            const [year, month, day] = value.split('-').map(Number);
+            const birth = new Date(year, month - 1, day);
+            if(birth.getFullYear() !== year || birth.getMonth() !== month - 1 || birth.getDate() !== day) return null;
+            const today = new Date();
+            let age = today.getFullYear() - year;
+            if(today.getMonth() < month - 1 || (today.getMonth() === month - 1 && today.getDate() < day)) age--;
+            return age < 0 ? null : age;
+        }
+        function updateRegistrationRequirements(){
+            const registration = !isLogin;
+            ['name','phone','dob'].forEach(id => document.getElementById(id).required = registration);
+            const role = document.getElementById('role');
+            role.disabled = isMinorRoute;
+            const isDeveloper = role.value === 'developer';
+            document.getElementById('idCard').required = registration && isDeveloper && !isMinorRoute;
+            ['parentName','parentEmail','parentUpi'].forEach(id => {
+                document.getElementById(id).required = registration && isMinorRoute;
+            });
+        }
 
         // Dashboard Tabs
         function switchUserTab(tabName) {
@@ -394,10 +423,10 @@
             document.getElementById(`btn-tab-${tabName}`)?.classList.add('tab-active');
             
             if (tabName === 'settings') openProfileSettings();
-            if (tabName === 'overview') loadStats();
-            if (tabName === 'proposals') loadProposals();
-            if (tabName === 'users') loadUsersList();
-            if (tabName === 'profile') loadMyProfile();
+            if (tabName === 'overview') loadStats().catch(reportRequestError);
+            if (tabName === 'proposals') loadProposals().catch(reportRequestError);
+            if (tabName === 'users') loadUsersList().catch(reportRequestError);
+            if (tabName === 'profile') loadMyProfile().catch(reportRequestError);
         }
 
         function switchPaymentSubTab(tabName) {
@@ -425,53 +454,100 @@
             document.getElementById('forgot-btn')?.classList.toggle('hidden',!isLogin); 
             document.getElementById('auth-tabs')?.classList.toggle('hidden',isLogin);
             if(!isLogin) setAgeTab('adult');
+            updateRegistrationRequirements();
         }
 
         function setAgeTab(type) {
             isMinorRoute = (type === 'minor');
             document.getElementById('minor-fields').classList.toggle('hidden', type !== 'minor');
-            document.getElementById('id-upload-container').classList.toggle('hidden', type === 'minor' && document.getElementById('role').value === 'developer');
+            document.getElementById('id-upload-container').classList.toggle('hidden', type === 'minor' || document.getElementById('role').value !== 'developer');
             document.getElementById('tab-adult').className = type === 'adult' ? 'pb-2 border-b-2 border-blue-500 font-bold text-white w-1/2 transition-colors' : 'pb-2 text-slate-400 font-bold border-b border-slate-700 w-1/2 transition-colors';
             document.getElementById('tab-minor').className = type === 'minor' ? 'pb-2 border-b-2 border-blue-500 font-bold text-white w-1/2 transition-colors' : 'pb-2 text-slate-400 font-bold border-b border-slate-700 w-1/2 transition-colors';
             if(type === 'minor') document.getElementById('role').value = 'developer';
+            updateRegistrationRequirements();
         }
 
         function checkSchoolLogic(){ 
-            const r=document.getElementById('role').value; 
-            if(!isMinorRoute) document.getElementById('id-upload-container').classList.toggle('hidden',r!=='developer'); 
-            else document.getElementById('id-upload-container').classList.add('hidden');
+            const r = document.getElementById('role').value;
+            document.getElementById('id-upload-container').classList.toggle('hidden', isMinorRoute || r !== 'developer');
+            updateRegistrationRequirements();
         }
         
         document.getElementById('auth-form').onsubmit = async (e) => {
-            e.preventDefault(); let opt={method:'POST'}; tempLoginEmail = document.getElementById('email').value;
-            if(isLogin) { opt.body=JSON.stringify({email:document.getElementById('email').value,password:document.getElementById('password').value}); opt.headers=apiHeaders; } 
-            else { 
-                const fd = new FormData(); 
-                ['email','name','dob','schoolName','gradeOrYear','role', 'phone'].forEach(i=>fd.append(i,document.getElementById(i).value)); 
-                if(document.getElementById('password').value) fd.append('password', document.getElementById('password').value); 
-                
-                if(isMinorRoute) {
-                    ['parentName', 'parentEmail', 'parentUpi'].forEach(i => fd.append(i === 'parentName' ? 'parent_name' : (i === 'parentEmail' ? 'parent_email' : 'parent_upi_id'), document.getElementById(i).value));
-                } else if(document.getElementById('role').value==='developer') {
-                    fd.append('idCard',document.getElementById('idCard').files[0]); 
+            e.preventDefault();
+            tempLoginEmail = document.getElementById('email').value.trim().toLowerCase();
+            try{
+                if(isLogin) {
+                    const data = await apiRequest('/api/login', {
+                        method: 'POST',
+                        headers: apiHeaders,
+                        body: JSON.stringify({email: tempLoginEmail, password: document.getElementById('password').value})
+                    });
+                    localStorage.setItem('token', data.token);
+                    showToast('Logged in!');
+                    await loadApp();
+                    return;
                 }
-                opt.body=fd; 
+
+                const age = ageFromDate(document.getElementById('dob').value);
+                if(age === null) return showToast('Enter a valid date of birth.', 'error');
+                if((age < 18) !== isMinorRoute) return showToast('Choose the age tab that matches your date of birth.', 'error');
+                if(isMinorRoute && document.getElementById('role').value !== 'developer') return showToast('Users under 18 must register as developers.', 'error');
+                if(document.getElementById('password').value.length < 8) return showToast('Password must be at least 8 characters.', 'error');
+
+                const formData = new FormData();
+                ['email','name','dob','schoolName','gradeOrYear','role','phone'].forEach(id => formData.append(id, document.getElementById(id).value.trim()));
+                formData.append('password', document.getElementById('password').value);
+                if(isMinorRoute) {
+                    formData.append('parent_name', document.getElementById('parentName').value.trim());
+                    formData.append('parent_email', document.getElementById('parentEmail').value.trim());
+                    formData.append('parent_upi_id', document.getElementById('parentUpi').value.trim());
+                } else if(document.getElementById('role').value === 'developer') {
+                    const idCard = document.getElementById('idCard').files[0];
+                    if(!idCard) return showToast('Upload your school or college ID.', 'error');
+                    formData.append('idCard', idCard);
+                }
+                await apiRequest('/api/register', {method: 'POST', body: formData});
+                showToast('Account created. Verify your phone and email to log in.');
+                document.getElementById('otp-modal')?.classList.remove('hidden');
+            } catch(error) {
+                if(error.message === 'needs_email') return showToast('Verify the link sent to your email before logging in.', 'error');
+                if(error.message === 'needs_otp') {
+                    document.getElementById('otp-modal')?.classList.remove('hidden');
+                    return;
+                }
+                reportRequestError(error);
             }
-            try{ 
-                const ep = isLogin ? '/api/login' : '/api/register';
-                const r=await fetch(ep,opt); const d=await r.json(); 
-                if(d.error === 'needs_otp') { document.getElementById('otp-modal')?.classList.remove('hidden'); return; }
-                if(d.error) return showToast(d.error,'error'); 
-                if(!isLogin){showToast('Registered! Please enter the WhatsApp OTP to verify.','success'); document.getElementById('otp-modal')?.classList.remove('hidden'); }
-                else{localStorage.setItem('token',d.token);showToast('Logged in!');loadApp();} 
-            }catch(e){showToast('Network error','error');}
         };
 
         async function verifyPhoneOtp() {
-            const otp = document.getElementById('otp-input').value; if(!otp) return;
-            const res = await fetch('/api/verify-phone', { method:'POST', headers: apiHeaders, body:JSON.stringify({email: tempLoginEmail, otp}) });
-            const data = await res.json(); if(data.error) return showToast(data.error, 'error');
-            showToast('WhatsApp verified! Please click Login to enter.'); closeModals(); toggleAuthMode(true);
+            const otp = document.getElementById('otp-input').value.trim();
+            if(!/^[0-9]{4}$/.test(otp)) return showToast('Enter the 4-digit verification code.', 'error');
+            try {
+                await apiRequest('/api/verify-phone', { method:'POST', headers: apiHeaders, body:JSON.stringify({email: tempLoginEmail, otp}) });
+                closeModals();
+                if(profilePhoneVerificationPending) {
+                    profilePhoneVerificationPending = false;
+                    showToast('Phone verified.');
+                    await loadApp();
+                } else {
+                    showToast('Phone verified. Check your email, then log in.');
+                    toggleAuthMode(true);
+                }
+            } catch(error) {
+                reportRequestError(error);
+            }
+        }
+
+        async function resendPhoneOtp() {
+            try {
+                await apiRequest('/api/resend-phone-otp', {
+                    method: 'POST',
+                    headers: apiHeaders,
+                    body: JSON.stringify({email: tempLoginEmail, password: document.getElementById('password').value})
+                });
+                showToast('A new verification code was sent to WhatsApp.');
+            } catch(error) { reportRequestError(error); }
         }
 
         async function loadApp() {
@@ -486,8 +562,10 @@
                 
                 if(currentUser.role==='developer'){ 
                     const wallBal = document.getElementById('payments-wallet-balance');
-                    if(wallBal) wallBal.innerText = `₹${currentUser.walletBalance}`;
+                    if(wallBal) wallBal.innerText = `₹${currentUser.walletBalance ?? 0}`;
                 }
+                const escrowUpi = document.getElementById('escrow-upi-id');
+                if(escrowUpi) escrowUpi.innerText = currentUser.escrowUpiId || 'Not configured';
 
                 if(currentUser.isAdmin){ 
                     document.getElementById('admin-dashboard')?.classList.remove('hidden'); switchAdminTab('approvals'); 
@@ -496,15 +574,15 @@
                     if (currentUser.isRejected) document.getElementById('rejection-banner')?.classList.remove('hidden');
                     else if (!currentUser.isVerified && currentUser.role === 'developer') document.getElementById('verification-banner')?.classList.remove('hidden');
                     if(currentUser.role==='buyer') { document.getElementById('nav-post-btn')?.classList.remove('hidden'); document.getElementById('btn-tab-payments')?.classList.add('hidden'); }
-                    else { document.getElementById('btn-tab-proposals')?.classList.remove('hidden'); document.getElementById('public-board-container')?.classList.remove('hidden'); loadPublicJobs(); } 
-                    switchUserTab('overview'); loadMyJobs(); 
+                    else { document.getElementById('btn-tab-proposals')?.classList.remove('hidden'); document.getElementById('public-board-container')?.classList.remove('hidden'); loadPublicJobs().catch(reportRequestError); }
+                    switchUserTab('overview'); loadMyJobs().catch(reportRequestError);
                 }
             } catch(e) { console.error(e); logout(); }
         }
 
         // Stats Overview
         async function loadStats() {
-            const r = await fetch('/api/stats', {headers:{'Authorization':`Bearer ${getToken()}`}}); const stats = await r.json(); const c = document.getElementById('stats-container');
+            const stats = await apiRequest('/api/stats', {headers:{'Authorization':`Bearer ${getToken()}`}}); const c = document.getElementById('stats-container');
             if(currentUser.role === 'developer') {
                 c.innerHTML = `<div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Earnings</p><p class="text-4xl font-black text-green-400 mt-2">₹${stats.earnings}</p></div><div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Ongoing Projects</p><p class="text-4xl font-black text-white mt-2">${stats.ongoing}</p></div><div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Proposals Sent</p><p class="text-4xl font-black text-white mt-2">${stats.proposals}</p></div>`;
             } else {
@@ -513,36 +591,39 @@
         }
 
         async function loadProposals() {
-            const r = await fetch('/api/my-proposals', {headers:{'Authorization':`Bearer ${getToken()}`}}); const props = await r.json();
-            document.getElementById('proposals-list').innerHTML = props.length === 0 ? '<p class="text-slate-500">No proposals sent yet.</p>' : props.map(p => `<div class="glass-card p-5 rounded-2xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><h3 class="font-bold text-white text-lg mb-1">${p.jobTitle}</h3><p class="text-sm text-slate-400 line-clamp-2 max-w-2xl">${p.message}</p></div><div class="flex flex-col items-end shrink-0"><span class="text-green-400 font-black text-lg">₹${p.amount}</span><span class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 uppercase tracking-widest mt-2">${p.jobStatus.replace('_',' ')}</span></div></div>`).join('');
+            const props = await apiRequest('/api/my-proposals', {headers:{'Authorization':`Bearer ${getToken()}`}});
+            document.getElementById('proposals-list').innerHTML = props.length === 0 ? '<p class="text-slate-500">No proposals sent yet.</p>' : props.map(p => `<div class="glass-card p-5 rounded-2xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><h3 class="font-bold text-white text-lg mb-1">${escapeHtml(p.jobTitle)}</h3><p class="text-sm text-slate-400 line-clamp-2 max-w-2xl">${escapeHtml(p.message)}</p></div><div class="flex flex-col items-end shrink-0"><span class="text-green-400 font-black text-lg">₹${Number(p.amount) || 0}</span><span class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 uppercase tracking-widest mt-2">${escapeHtml((p.jobStatus || '').replace('_',' '))}</span></div></div>`).join('');
         }
 
         async function loadUsersList() {
-            const r = await fetch('/api/users-list', {headers:{'Authorization':`Bearer ${getToken()}`}}); const users = await r.json();
-            document.getElementById('community-list').innerHTML = users.length === 0 ? '<p class="text-slate-500">No users found.</p>' : users.map(u => `<div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col items-center text-center"><div class="w-16 h-16 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-full mb-4 flex items-center justify-center text-xl font-black text-white">${u.name.charAt(0)}</div><h3 class="font-bold text-white text-lg">${u.name}</h3><p class="text-[10px] text-blue-400 uppercase tracking-widest font-bold mb-2">${u.role}</p><p class="text-sm text-slate-400 mb-6">${u.schoolName}</p><button onclick="viewProfile(${u.id})" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition">View Profile</button></div>`).join('');
+            const users = await apiRequest('/api/users-list', {headers:{'Authorization':`Bearer ${getToken()}`}});
+            document.getElementById('community-list').innerHTML = users.length === 0 ? '<p class="text-slate-500">No users found.</p>' : users.map(u => `<div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col items-center text-center"><div class="w-16 h-16 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-full mb-4 flex items-center justify-center text-xl font-black text-white">${escapeHtml((u.name || '?').charAt(0))}</div><h3 class="font-bold text-white text-lg">${escapeHtml(u.name)}</h3><p class="text-[10px] text-blue-400 uppercase tracking-widest font-bold mb-2">${escapeHtml(u.role)}</p><p class="text-sm text-slate-400 mb-6">${escapeHtml(u.schoolName)}</p><button onclick="viewProfile(${Number(u.id)})" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition">View Profile</button></div>`).join('');
         }
 
         async function loadMyProfile() {
-            const r=await fetch(`/api/profile/${currentUser.id}`,{headers:{'Authorization':`Bearer ${getToken()}`}}); const d=await r.json(); 
+            const d=await apiRequest(`/api/profile/${currentUser.id}`,{headers:{'Authorization':`Bearer ${getToken()}`}});
             document.getElementById('my-profile-name').innerText=d.name; document.getElementById('my-profile-role').innerText=d.role;
             document.getElementById('my-followers').innerText=d.followers; document.getElementById('my-following').innerText=d.following;
-            document.getElementById('my-profile-reviews').innerHTML=d.reviews.length===0?'<p class="text-sm text-slate-500 mt-4">No reviews yet.</p>':d.reviews.map(x=>`<div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-3"><p class="text-sm font-bold text-slate-200 mb-1">${x.title}</p><p class="text-yellow-400 text-sm mb-2">${'★'.repeat(x.reviewScore)}${'☆'.repeat(5-x.reviewScore)}</p><p class="text-sm text-slate-400 italic">"${x.reviewText}"</p></div>`).join('');
+            document.getElementById('my-profile-reviews').innerHTML=d.reviews.length===0?'<p class="text-sm text-slate-500 mt-4">No reviews yet.</p>':d.reviews.map(x=>`<div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-3"><p class="text-sm font-bold text-slate-200 mb-1">${escapeHtml(x.title)}</p><p class="text-yellow-400 text-sm mb-2">${'★'.repeat(Math.max(0, Math.min(5, Number(x.reviewScore) || 0)))}${'☆'.repeat(5-Math.max(0, Math.min(5, Number(x.reviewScore) || 0)))}</p><p class="text-sm text-slate-400 italic">"${escapeHtml(x.reviewText)}"</p></div>`).join('');
         }
 
         async function viewProfile(id){ 
-            const r=await fetch(`/api/profile/${id}`,{headers:{'Authorization':`Bearer ${getToken()}`}}); const d=await r.json(); 
+            const d=await apiRequest(`/api/profile/${Number(id)}`,{headers:{'Authorization':`Bearer ${getToken()}`}});
             document.getElementById('prof-name').innerText=d.name; document.getElementById('prof-school').innerText=`${d.gradeOrYear} @ ${d.schoolName}`; 
             document.getElementById('prof-rating').innerText=d.avgRating; document.getElementById('prof-jobs-count').innerText=`(${d.reviews.length} completed jobs)`; 
             document.getElementById('prof-followers').innerText=d.followers; document.getElementById('prof-following').innerText=d.following;
-            let btnHtml = id !== currentUser.id ? `<button onclick="toggleFollow(${id})" class="w-full py-2 mt-2 mb-4 rounded-xl font-bold transition-all ${d.isFollowing ? 'bg-slate-700 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'}">${d.isFollowing ? 'Unfollow' : 'Follow'}</button>` : '';
+            let btnHtml = Number(id) !== Number(currentUser.id) ? `<button onclick="toggleFollow(${Number(id)})" class="w-full py-2 mt-2 mb-4 rounded-xl font-bold transition-all ${d.isFollowing ? 'bg-slate-700 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'}">${d.isFollowing ? 'Unfollow' : 'Follow'}</button>` : '';
             document.getElementById('prof-follow-btn-container').innerHTML = btnHtml;
-            document.getElementById('prof-reviews').innerHTML=d.reviews.length===0?'<p class="text-sm text-slate-500">No reviews.</p>':d.reviews.map(x=>`<div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 mb-2"><p class="text-xs font-bold text-slate-300 mb-1">${x.title}</p><p class="text-yellow-400 text-sm mb-1">${'★'.repeat(x.reviewScore)}${'☆'.repeat(5-x.reviewScore)}</p><p class="text-sm text-slate-400 italic">"${x.reviewText}"</p></div>`).join(''); 
+            document.getElementById('prof-reviews').innerHTML=d.reviews.length===0?'<p class="text-sm text-slate-500">No reviews.</p>':d.reviews.map(x=>`<div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 mb-2"><p class="text-xs font-bold text-slate-300 mb-1">${escapeHtml(x.title)}</p><p class="text-yellow-400 text-sm mb-1">${'★'.repeat(Math.max(0, Math.min(5, Number(x.reviewScore) || 0)))}${'☆'.repeat(5-Math.max(0, Math.min(5, Number(x.reviewScore) || 0)))}</p><p class="text-sm text-slate-400 italic">"${escapeHtml(x.reviewText)}"</p></div>`).join('');
             document.getElementById('profile-modal')?.classList.remove('hidden'); 
         }
 
         async function toggleFollow(id) {
-            await fetch(`/api/follow/${id}`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }});
-            viewProfile(id); if(document.getElementById('user-tab-profile').classList.contains('hidden') === false) loadMyProfile();
+            try {
+                await apiRequest(`/api/follow/${Number(id)}`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }});
+                await viewProfile(id);
+                if(document.getElementById('user-tab-profile').classList.contains('hidden') === false) await loadMyProfile();
+            } catch(error) { reportRequestError(error); }
         }
 
         // PROFILE SETTINGS & DELETE ACCOUNT
@@ -558,53 +639,80 @@
         document.getElementById('edit-profile-form')?.addEventListener('submit', async (e) => {
             e.preventDefault(); const fd = new FormData(); ['name', 'email', 'phone', 'dob'].forEach(id => fd.append(id, document.getElementById(`edit-${id}`).value));
             if(currentUser.role === 'developer') { ['school', 'grade'].forEach(id => fd.append(id==='school'?'schoolName':'gradeOrYear', document.getElementById(`edit-${id}`).value)); if(document.getElementById('edit-idCard').files[0]) fd.append('idCard', document.getElementById('edit-idCard').files[0]); }
-            const res = await fetch('/api/profile/edit', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: fd });
-            if(document.getElementById('edit-upi').value) await fetch('/api/profile/upi', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${getToken()}`}, body: JSON.stringify({upiId: document.getElementById('edit-upi').value}) });
-            const data = await res.json(); if(data.error) return showToast(data.error, 'error'); if(data.emailChanged) showToast('Email updated. Re-verify in terminal.', 'success'); else showToast('Profile updated!'); loadApp();
+            try {
+                const data = await apiRequest('/api/profile/edit', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: fd });
+                currentUser.email = document.getElementById('edit-email').value.trim().toLowerCase();
+                if(document.getElementById('edit-upi').value) {
+                    await apiRequest('/api/profile/upi', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${getToken()}`}, body: JSON.stringify({upiId: document.getElementById('edit-upi').value.trim()}) });
+                }
+                if(data.phoneChanged) {
+                    tempLoginEmail = currentUser.email;
+                    profilePhoneVerificationPending = true;
+                    document.getElementById('otp-modal')?.classList.remove('hidden');
+                }
+                if(data.emailChanged && data.phoneChanged) showToast('Profile updated. Verify your new email and phone.', 'success');
+                else if(data.emailChanged) showToast('Profile updated. Verify the link sent to your new email.', 'success');
+                else if(data.phoneChanged) showToast('Profile updated. Verify the code sent to your new phone.', 'success');
+                else showToast('Profile updated!');
+                await loadApp();
+            } catch(error) { reportRequestError(error); }
         });
 
         async function changePasswordInsideProfile() {
             const c = document.getElementById('edit-current-pass').value, n = document.getElementById('edit-new-pass').value; if(!c || !n) return showToast('Fill password fields', 'error');
-            const res = await fetch('/api/profile/password', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${getToken()}`}, body: JSON.stringify({currentPassword: c, newPassword: n}) });
-            const data = await res.json(); if(data.error) return showToast(data.error, 'error'); showToast('Password changed!'); document.getElementById('edit-current-pass').value=''; document.getElementById('edit-new-pass').value='';
+            if(n.length < 8) return showToast('New password must be at least 8 characters.', 'error');
+            try {
+                await apiRequest('/api/profile/password', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${getToken()}`}, body: JSON.stringify({currentPassword: c, newPassword: n}) });
+                showToast('Password changed!');
+                document.getElementById('edit-current-pass').value='';
+                document.getElementById('edit-new-pass').value='';
+            } catch(error) { reportRequestError(error); }
         }
 
         async function deleteMyAccount() {
             customConfirm("Permanently Delete Account?", "This action cannot be undone. All your data will be wiped.", async () => {
-                await fetch('/api/account', { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } }); logout();
+                try {
+                    await apiRequest('/api/account', { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+                    logout();
+                } catch(error) { reportRequestError(error); }
             });
         }
 
         // JOBS
         function openPostJobModal(){ document.getElementById('post-job-modal')?.classList.remove('hidden'); }
-        async function postJob(){ const t=document.getElementById('job-title').value, d=document.getElementById('job-desc').value, b=document.getElementById('job-budget').value; if(!t||!d||!b) return showToast('Fill all fields','error'); await fetch('/api/jobs',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({title:t,description:d,budget:b})}); showToast('Project Published!'); closeModals(); ['job-title','job-desc','job-budget'].forEach(i=>document.getElementById(i).value=''); loadMyJobs(); switchUserTab('overview'); }
-        async function deleteJob(id) { customConfirm("Delete Project?", "Are you sure you want to delete this open project?", async () => { await fetch(`/api/jobs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } }); showToast('Project deleted.'); loadMyJobs(); switchUserTab('overview'); }); }
+        async function postJob(){ const t=document.getElementById('job-title').value.trim(), d=document.getElementById('job-desc').value.trim(), b=Number(document.getElementById('job-budget').value); if(!t||!d||!Number.isSafeInteger(b)||b<=0) return showToast('Enter a title, description, and positive whole-number budget.','error'); try { await apiRequest('/api/jobs',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({title:t,description:d,budget:b})}); showToast('Project published!'); closeModals(); ['job-title','job-desc','job-budget'].forEach(i=>document.getElementById(i).value=''); await loadMyJobs(); switchUserTab('overview'); } catch(error) { reportRequestError(error); } }
+        async function deleteJob(id) { customConfirm("Delete Project?", "Are you sure you want to delete this open project?", async () => { try { await apiRequest(`/api/jobs/${Number(id)}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } }); showToast('Project deleted.'); await loadMyJobs(); switchUserTab('overview'); } catch(error) { reportRequestError(error); } }); }
         function getStatusColor(s){ const c={'open':'bg-slate-700/50 text-slate-300','awaiting_payment':'bg-yellow-900/50 text-yellow-400 border border-yellow-700/50','in_progress':'bg-blue-900/50 text-blue-300','in_review':'bg-purple-900/50 text-purple-300','completed':'bg-green-900/50 text-green-400'}; return c[s]||'bg-slate-700 text-slate-300'; }
 
         async function loadMyJobs(){
-            const r=await fetch('/api/my-jobs',{headers:{'Authorization':`Bearer ${getToken()}`}}); const jobs=await r.json(); const board = document.getElementById('job-board'); if(!board) return;
-            board.innerHTML=jobs.length===0?`<p class="text-slate-500 col-span-2">No active projects.</p>`:jobs.map(job=>`
+            const jobs=await apiRequest('/api/my-jobs',{headers:{'Authorization':`Bearer ${getToken()}`}}); const board = document.getElementById('job-board'); if(!board) return;
+            board.innerHTML=jobs.length===0?`<p class="text-slate-500 col-span-2">No projects yet.</p>`:jobs.map(job=>`
                 <div class="glass-card p-6 rounded-2xl relative ${job.status === 'completed' ? 'opacity-70' : ''}">
-                    ${currentUser.role==='buyer' && job.status==='open' ? `<button onclick="deleteJob(${job.id})" class="absolute top-4 right-4 text-slate-500 hover:text-red-400 font-bold text-xl">&times;</button>` : ''}
-                    <div class="flex justify-between items-start mb-2 pr-6"><h3 class="font-bold text-lg ${job.status === 'completed' ? 'text-green-400' : 'text-white'}">${job.title}</h3><span class="bg-slate-800 text-white font-bold px-3 py-1 rounded-full border border-slate-600 text-sm">₹${job.budget}</span></div>
-                    <p class="text-sm text-slate-400 mb-4 line-clamp-2">${job.status === 'completed' ? 'Archived for privacy.' : job.description}</p>
+                    ${currentUser.role==='buyer' && job.status==='open' ? `<button onclick="deleteJob(${Number(job.id)})" class="absolute top-4 right-4 text-slate-500 hover:text-red-400 font-bold text-xl">&times;</button>` : ''}
+                    <div class="flex justify-between items-start mb-2 pr-6"><h3 class="font-bold text-lg ${job.status === 'completed' ? 'text-green-400' : 'text-white'}">${escapeHtml(job.title)}</h3><span class="bg-slate-800 text-white font-bold px-3 py-1 rounded-full border border-slate-600 text-sm">₹${Number(job.budget) || 0}</span></div>
+                    <p class="text-sm text-slate-400 mb-4 line-clamp-2">${job.status === 'completed' ? 'Completed project.' : escapeHtml(job.description)}</p>
                     <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-700/50">
-                        <span class="text-[10px] font-bold px-3 py-1.5 ${getStatusColor(job.status)} rounded-lg uppercase tracking-wider">${job.status.replace('_',' ')}</span>
-                        ${currentUser.role==='buyer'&&job.status==='open'?`<button onclick="viewBids(${job.id})" class="text-sm font-bold text-blue-400 hover:underline">View Bids (${job.bidCount})</button>`:''}
-                        ${job.status!=='open'?`<button onclick="openWorkspace(${job.id})" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-blue-500">Workspace</button>`:''}
+                        <span class="text-[10px] font-bold px-3 py-1.5 ${getStatusColor(job.status)} rounded-lg uppercase tracking-wider">${escapeHtml((job.status || '').replace('_',' '))}</span>
+                        ${currentUser.role==='buyer'&&job.status==='open'?`<button onclick="viewBids(${Number(job.id)})" class="text-sm font-bold text-blue-400 hover:underline">View Bids (${Number(job.bidCount) || 0})</button>`:''}
+                        ${job.status!=='open'?`<button onclick="openWorkspace(${Number(job.id)})" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-blue-500">Workspace</button>`:''}
                     </div>
                 </div>`).join('');
         }
 
         async function loadPublicJobs(){
-            const r=await fetch('/api/jobs',{headers:{'Authorization':`Bearer ${getToken()}`}}); const jobs=await r.json(); const pubBoard = document.getElementById('public-job-board'); if(!pubBoard) return;
-            pubBoard.innerHTML=jobs.map(j=>`<div class="glass-card p-6 rounded-2xl relative overflow-hidden"><div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-blue-500"></div><div class="flex justify-between items-start mb-2 pl-2"><h3 class="font-bold text-xl text-white">${j.title}</h3><span class="bg-green-900/50 border border-green-700/50 text-green-400 font-black px-3 py-1 rounded-full text-sm">₹${j.budget}</span></div><p class="text-sm text-slate-400 mb-4 pl-2">${j.description}</p><div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-xl mb-4 text-xs text-slate-400 flex justify-between items-center pl-2"><span>👤 <button onclick="viewProfile(${j.buyerId})" class="font-bold text-blue-400 hover:underline">${j.buyerName}</button> <br> 🏫 ${j.buyerSchool}</span></div><div class="pl-2">${currentUser.isVerified?`<button onclick="openBidModal(${j.id})" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl hover:bg-blue-500">Place Bid</button>`:`<button class="w-full bg-slate-700 text-slate-500 font-bold py-2 rounded-xl" disabled>Verify to Bid</button>`}</div></div>`).join('');
+            const jobs=await apiRequest('/api/jobs',{headers:{'Authorization':`Bearer ${getToken()}`}}); const pubBoard = document.getElementById('public-job-board'); if(!pubBoard) return;
+            pubBoard.innerHTML=jobs.length ? jobs.map(j=>`<div class="glass-card p-6 rounded-2xl relative overflow-hidden"><div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-blue-500"></div><div class="flex justify-between items-start mb-2 pl-2"><h3 class="font-bold text-xl text-white">${escapeHtml(j.title)}</h3><span class="bg-green-900/50 border border-green-700/50 text-green-400 font-black px-3 py-1 rounded-full text-sm">₹${Number(j.budget) || 0}</span></div><p class="text-sm text-slate-400 mb-4 pl-2">${escapeHtml(j.description)}</p><div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-xl mb-4 text-xs text-slate-400 flex justify-between items-center pl-2"><span>👤 <button onclick="viewProfile(${Number(j.buyerId)})" class="font-bold text-blue-400 hover:underline">${escapeHtml(j.buyerName)}</button> <br> 🏫 ${escapeHtml(j.buyerSchool)}</span></div><div class="pl-2">${currentUser.isVerified?`<button onclick="openBidModal(${Number(j.id)},${Number(j.budget)})" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl hover:bg-blue-500">Place Bid</button>`:`<button class="w-full bg-slate-700 text-slate-500 font-bold py-2 rounded-xl" disabled>Verify to Bid</button>`}</div></div>`).join('') : '<p class="text-slate-500">No projects are currently available.</p>';
         }
 
         // BIDS
-        function openBidModal(id){ 
-            if(!currentUser.upiId && !currentUser.parent_upi_id) { showToast("Add a UPI ID in Settings first to receive payments.", "error"); switchUserTab('settings'); return; }
-            document.getElementById('bid-job-id').value=id; document.getElementById('bid-amount').value = ''; document.getElementById('bid-fee-text').classList.add('hidden'); document.getElementById('bid-modal')?.classList.remove('hidden'); 
+        function openBidModal(id, budget){
+            if(!currentUser.upiId && !currentUser.parent_upi_id) { showToast("Add a payout UPI ID in Settings before bidding.", "error"); switchUserTab('settings'); return; }
+            const amount = document.getElementById('bid-amount');
+            document.getElementById('bid-job-id').value=Number(id);
+            amount.value = '';
+            amount.max = Number(budget) || '';
+            document.getElementById('bid-fee-text').classList.add('hidden');
+            document.getElementById('bid-modal')?.classList.remove('hidden');
         }
         function calculateFee() {
             const amt = parseFloat(document.getElementById('bid-amount').value);
@@ -615,13 +723,18 @@
                 feeText.classList.remove('hidden');
             } else { feeText.classList.add('hidden'); }
         }
-        async function submitBid(){ const j=document.getElementById('bid-job-id').value, a=document.getElementById('bid-amount').value, m=document.getElementById('bid-message').value; if(!a||!m) return showToast('Enter all','error'); await fetch('/api/bids',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({jobId:j,amount:a,message:m})}); showToast('Bid Placed!'); closeModals(); switchUserTab('overview'); }
-        async function viewBids(id){ const r=await fetch(`/api/jobs/${id}/bids`,{headers:{'Authorization':`Bearer ${getToken()}`}}); const b=await r.json(); document.getElementById('bids-list').innerHTML=b.length===0?'<p class="text-slate-500">No bids yet.</p>':b.map(x=>`<div class="border border-slate-700 rounded-2xl p-5 bg-slate-800/50 mb-4"><div class="flex justify-between items-center mb-2"><p class="font-bold text-white"><button onclick="viewProfile(${x.developerId})" class="text-blue-400 hover:underline" title="View Full Profile & Reviews">${x.devName}</button> <br><span class="text-xs text-slate-400 font-normal">🏫 ${x.devSchool}</span></p><span class="font-black text-green-400 bg-green-900/50 px-3 py-1 rounded-full text-sm border border-green-700/50">Bids ₹${x.amount}</span></div><p class="text-sm text-slate-300 mb-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700">${x.message}</p><button onclick="acceptBid(${x.id})" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow hover:bg-blue-500">Accept Bid & Hire</button></div>`).join(''); document.getElementById('view-bids-modal').classList.remove('hidden'); }
+        async function submitBid(){ const j=Number(document.getElementById('bid-job-id').value), a=Number(document.getElementById('bid-amount').value), m=document.getElementById('bid-message').value.trim(); if(!Number.isSafeInteger(a)||a<=0||!m) return showToast('Enter a positive whole-number bid and a message.','error'); try { await apiRequest('/api/bids',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({jobId:j,amount:a,message:m})}); showToast('Bid placed!'); closeModals(); switchUserTab('overview'); } catch(error) { reportRequestError(error); } }
+        async function viewBids(id){ try { const bids=await apiRequest(`/api/jobs/${Number(id)}/bids`,{headers:{'Authorization':`Bearer ${getToken()}`}}); document.getElementById('bids-list').innerHTML=bids.length===0?'<p class="text-slate-500">No bids yet.</p>':bids.map(x=>`<div class="border border-slate-700 rounded-2xl p-5 bg-slate-800/50 mb-4"><div class="flex justify-between items-center mb-2"><p class="font-bold text-white"><button onclick="viewProfile(${Number(x.developerId)})" class="text-blue-400 hover:underline" title="View Full Profile & Reviews">${escapeHtml(x.devName)}</button> <br><span class="text-xs text-slate-400 font-normal">🏫 ${escapeHtml(x.devSchool)}</span></p><span class="font-black text-green-400 bg-green-900/50 px-3 py-1 rounded-full text-sm border border-green-700/50">Bid: ₹${Number(x.amount) || 0}</span></div><p class="text-sm text-slate-300 mb-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700">${escapeHtml(x.message)}</p><button onclick="acceptBid(${Number(x.id)})" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow hover:bg-blue-500">Accept Bid & Hire</button></div>`).join(''); document.getElementById('view-bids-modal').classList.remove('hidden'); } catch(error) { reportRequestError(error); } }
         
         async function acceptBid(id){ 
-            if(!currentUser.upiId && !currentUser.parent_upi_id) { showToast("Please add your UPI ID in Settings first before hiring.", "error"); switchUserTab('settings'); return; }
             customConfirm("Hire Developer?", "Project will move to Escrow. You must confirm payment via UTR.", async () => {
-                await fetch(`/api/bids/${id}/accept`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('Developer Hired! Please fund escrow in workspace.'); closeModals(); loadMyJobs(); switchUserTab('overview');
+                try {
+                    await apiRequest(`/api/bids/${Number(id)}/accept`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)});
+                    showToast('Developer hired. Fund the agreed bid in the workspace.');
+                    closeModals();
+                    await loadMyJobs();
+                    switchUserTab('overview');
+                } catch(error) { reportRequestError(error); }
             });
         }
 
@@ -629,22 +742,28 @@
         async function openWorkspace(id){ 
             currentWorkspaceJobId=id; switchUserTab('workspace');
             document.getElementById('ws-placeholder')?.classList.add('hidden'); document.getElementById('ws-content')?.classList.remove('hidden');
-            await loadWorkspaceData(); if(chatInterval) clearInterval(chatInterval); chatInterval=setInterval(loadWorkspaceData,3000); 
+            try {
+                await loadWorkspaceData();
+                if(chatInterval) clearInterval(chatInterval);
+                chatInterval=setInterval(() => loadWorkspaceData().catch(reportRequestError),3000);
+            } catch(error) { reportRequestError(error); }
         }
 
         async function submitUtrFunding() {
-            const utr = document.getElementById('payment-utr').value;
-            if (utr.length !== 12) return showToast('Please enter a valid 12-digit UTR', 'error');
-            await fetch(`/api/jobs/${currentWorkspaceJobId}/fund-utr`, { method: 'POST', headers: Object.assign({'Authorization': `Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({ utr }) });
-            showToast('UTR Submitted! Admin will verify shortly.');
-            loadWorkspaceData(); loadMyJobs();
+            const utr = document.getElementById('payment-utr').value.trim();
+            if (!/^[0-9]{12}$/.test(utr)) return showToast('Please enter a valid 12-digit UTR.', 'error');
+            if (!currentUser.escrowUpiId) return showToast('Escrow payment details are not configured. Contact support.', 'error');
+            try {
+                await apiRequest(`/api/jobs/${currentWorkspaceJobId}/fund-utr`, { method: 'POST', headers: Object.assign({'Authorization': `Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({ utr }) });
+                showToast('UTR submitted. Work can start after admin verification.');
+                await loadWorkspaceData();
+                await loadMyJobs();
+            } catch(error) { reportRequestError(error); }
         }
 
         async function loadWorkspaceData(){ 
             if(!currentWorkspaceJobId) return; 
-            const r=await fetch(`/api/jobs/${currentWorkspaceJobId}/workspace`,{headers:{'Authorization':`Bearer ${getToken()}`}}); 
-            if(!r.ok) { return showToast("Workspace error.", "error"); }
-            const {job,messages}=await r.json(); 
+            const {job,messages}=await apiRequest(`/api/jobs/${currentWorkspaceJobId}/workspace`,{headers:{'Authorization':`Bearer ${getToken()}`}});
             
             const titleEl = document.getElementById('ws-title'); if(titleEl) titleEl.innerText=job.title; 
             const se=document.getElementById('ws-status'); if(se) { se.innerText=job.status.replace('_',' '); se.className=`px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase ${getStatusColor(job.status)}`; }
@@ -652,46 +771,54 @@
             const cb=document.getElementById('ws-chat-box'); 
             if(cb) {
                 const iab=cb.scrollHeight-cb.scrollTop===cb.clientHeight; 
-                cb.innerHTML=messages.map(m=>`<div class="flex flex-col ${m.senderId===currentUser.id?'items-end':'items-start'}"><span class="text-[10px] text-slate-500 mb-1 px-1">${m.senderName}</span><div class="px-4 py-2 rounded-2xl max-w-[80%] ${m.senderId===currentUser.id?'bg-blue-600 text-white rounded-br-none':'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'}"><p class="text-sm">${m.text}</p></div></div>`).join(''); 
+                cb.innerHTML=messages.map(m=>`<div class="flex flex-col ${Number(m.senderId)===Number(currentUser.id)?'items-end':'items-start'}"><span class="text-[10px] text-slate-500 mb-1 px-1">${escapeHtml(m.senderName)}</span><div class="px-4 py-2 rounded-2xl max-w-[80%] ${Number(m.senderId)===Number(currentUser.id)?'bg-blue-600 text-white rounded-br-none':'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'}"><p class="text-sm">${escapeHtml(m.text)}</p></div></div>`).join('');
                 if(iab) cb.scrollTop=cb.scrollHeight; 
             }
             
-            ['ws-dev-actions', 'ws-buyer-actions', 'ws-deliverable-box', 'ws-review-box', 'ws-payment-box', 'ws-dev-payment-waiting', 'ws-dev-payout-area'].forEach(id => document.getElementById(id)?.classList.add('hidden'));
+            ['ws-dev-actions', 'ws-buyer-actions', 'ws-deliverable-box', 'ws-review-box', 'ws-payment-box', 'ws-buyer-payment-waiting', 'ws-dev-payment-waiting', 'ws-dev-funding-waiting', 'ws-dev-review-waiting', 'ws-dev-payout-area'].forEach(id => document.getElementById(id)?.classList.add('hidden'));
 
             if(job.status === 'awaiting_payment') {
-                if(currentUser.role === 'buyer') document.getElementById('ws-payment-box')?.classList.remove('hidden'); 
-                else document.getElementById('ws-dev-payment-waiting')?.classList.remove('hidden'); return;
+                if(currentUser.role === 'buyer') {
+                    document.getElementById(job.fundedUtr ? 'ws-buyer-payment-waiting' : 'ws-payment-box')?.classList.remove('hidden');
+                } else {
+                    document.getElementById(job.fundedUtr ? 'ws-dev-funding-waiting' : 'ws-dev-payment-waiting')?.classList.remove('hidden');
+                }
+                return;
             }
             if(job.status==='completed'){ 
-                const bx=currentUser.role==='buyer'?'ws-buyer-actions':'ws-dev-actions'; document.getElementById(bx)?.classList.remove('hidden'); document.getElementById('ws-deliverable-box')?.classList.remove('hidden'); const link = document.getElementById('ws-deliverable-link'); if(link) link.href=job.deliverableUrl; 
+                const bx=currentUser.role==='buyer'?'ws-buyer-actions':'ws-dev-actions'; document.getElementById(bx)?.classList.remove('hidden'); document.getElementById('ws-deliverable-box')?.classList.remove('hidden'); const link = document.getElementById('ws-deliverable-link'); if(link) link.href=safeHttpUrl(job.deliverableUrl);
                 if(currentUser.role === 'developer') {
                     const payoutArea = document.getElementById('ws-dev-payout-area');
                     payoutArea.classList.remove('hidden');
-                    if(job.payoutRequested === 1) payoutArea.innerHTML = '<p class="text-yellow-400 font-bold text-sm text-center">Payout Requested. Admin is processing.</p>';
-                    else if(job.payoutRequested === 2) payoutArea.innerHTML = `<p class="text-green-400 font-bold text-sm text-center">Payout Sent! UTR: ${job.paidOutUtr}</p>`;
-                    else payoutArea.innerHTML = `<button onclick="requestProjectPayout(${job.id})" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-500">Request Payout for this Project</button>`;
+                    if(!job.fundingVerified) payoutArea.innerHTML = '<p class="text-yellow-400 font-bold text-sm text-center">Funding verification is pending with admin.</p>';
+                    else if(job.payoutRequested === 1) payoutArea.innerHTML = '<p class="text-yellow-400 font-bold text-sm text-center">Payout requested. Admin is processing it.</p>';
+                    else if(job.payoutRequested === 2) payoutArea.innerHTML = `<p class="text-green-400 font-bold text-sm text-center">Payout sent! UTR: ${escapeHtml(job.paidOutUtr)}</p>`;
+                    else payoutArea.innerHTML = `<button onclick="requestProjectPayout(${Number(job.id)})" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-500">Request Payout for this Project</button>`;
                 }
                 return; 
             } 
             
-            if(currentUser.role==='developer') document.getElementById('ws-dev-actions')?.classList.remove('hidden'); 
-            else if(currentUser.role==='buyer'&&job.status==='in_review'){ document.getElementById('ws-buyer-actions')?.classList.remove('hidden'); document.getElementById('ws-deliverable-box')?.classList.remove('hidden'); document.getElementById('ws-review-box')?.classList.remove('hidden'); const link = document.getElementById('ws-deliverable-link'); if(link) link.href=job.deliverableUrl; } 
+            if(currentUser.role==='developer' && job.status==='in_progress') document.getElementById('ws-dev-actions')?.classList.remove('hidden');
+            else if(currentUser.role==='developer' && job.status==='in_review') document.getElementById('ws-dev-review-waiting')?.classList.remove('hidden');
+            else if(currentUser.role==='buyer'&&job.status==='in_review'){ document.getElementById('ws-buyer-actions')?.classList.remove('hidden'); document.getElementById('ws-deliverable-box')?.classList.remove('hidden'); document.getElementById('ws-review-box')?.classList.remove('hidden'); const link = document.getElementById('ws-deliverable-link'); if(link) link.href=safeHttpUrl(job.deliverableUrl); }
         }
         
-        async function sendWorkspaceMessage(){ const i=document.getElementById('ws-msg-input'); const t=i.value.trim(); if(!t) return; i.value=''; await fetch(`/api/jobs/${currentWorkspaceJobId}/messages`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({text:t})}); loadWorkspaceData(); }
-        async function submitWork(){ const u=document.getElementById('ws-submit-url').value; if(!u) return showToast('Enter URL','error'); await fetch(`/api/jobs/${currentWorkspaceJobId}/submit`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({url:u})}); showToast('Work submitted!'); loadWorkspaceData(); loadMyJobs(); switchUserTab('overview'); }
-        async function completeJob(){ const s=document.getElementById('ws-review-score').value, r=document.getElementById('ws-review-text').value; if(!r) return showToast('Write review','error'); await fetch(`/api/jobs/${currentWorkspaceJobId}/complete`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({score:s,review:r})}); showToast('Job Completed!'); loadWorkspaceData(); loadMyJobs(); switchUserTab('overview'); }
-        async function requestProjectPayout(id) { await fetch(`/api/jobs/${id}/request-payout`, { method: 'POST', headers: Object.assign({'Authorization': `Bearer ${getToken()}`}, apiHeaders) }); showToast('Payout requested to admin.'); loadWorkspaceData(); }
+        async function sendWorkspaceMessage(){ const i=document.getElementById('ws-msg-input'); const t=i.value.trim(); if(!t) return; try { await apiRequest(`/api/jobs/${currentWorkspaceJobId}/messages`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({text:t})}); i.value=''; await loadWorkspaceData(); } catch(error) { reportRequestError(error); } }
+        async function submitWork(){ const u=document.getElementById('ws-submit-url').value.trim(); if(!u) return showToast('Enter a delivery URL.','error'); try { await apiRequest(`/api/jobs/${currentWorkspaceJobId}/submit`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({url:u})}); showToast('Work submitted!'); await loadWorkspaceData(); await loadMyJobs(); switchUserTab('overview'); } catch(error) { reportRequestError(error); } }
+        async function completeJob(){ const s=document.getElementById('ws-review-score').value, r=document.getElementById('ws-review-text').value.trim(); if(!r) return showToast('Write a review.','error'); try { await apiRequest(`/api/jobs/${currentWorkspaceJobId}/complete`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({score:s,review:r})}); showToast('Project completed!'); await loadWorkspaceData(); await loadMyJobs(); switchUserTab('overview'); } catch(error) { reportRequestError(error); } }
+        async function requestProjectPayout(id) { try { await apiRequest(`/api/jobs/${Number(id)}/request-payout`, { method: 'POST', headers: Object.assign({'Authorization': `Bearer ${getToken()}`}, apiHeaders) }); showToast('Payout requested.'); await loadWorkspaceData(); } catch(error) { reportRequestError(error); } }
+        function safeHttpUrl(value){ try { const url = new URL(value); return url.protocol === 'https:' ? url.href : '#'; } catch { return '#'; } }
+        function safeUploadUrl(value){ return /^\/uploads\/[a-f0-9]{32}\.(?:jpg|jpeg|png|webp)$/.test(value || '') ? value : '#'; }
 
         // UTILS & MISC
         function openFeedbackModal() { document.getElementById('feedback-modal')?.classList.remove('hidden'); }
-        async function submitFeedback() { const t = document.getElementById('feedback-type').value; const m = document.getElementById('feedback-message').value; if(!m) return showToast('Please write a message', 'error'); await fetch('/api/feedbacks', { method: 'POST', headers: Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({ type: t, message: m }) }); showToast('Feedback submitted! Thank you.'); closeModals(); document.getElementById('feedback-message').value = ''; }
+        async function submitFeedback() { const t = document.getElementById('feedback-type').value; const m = document.getElementById('feedback-message').value.trim(); if(!m) return showToast('Please write a message', 'error'); try { await apiRequest('/api/feedbacks', { method: 'POST', headers: Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({ type: t, message: m }) }); showToast('Feedback submitted! Thank you.'); closeModals(); document.getElementById('feedback-message').value = ''; } catch(error) { reportRequestError(error); } }
         function openReportModal(id){ document.getElementById('report-user-id').value=id; document.getElementById('report-modal')?.classList.remove('hidden'); }
-        async function submitReport(){ const i=document.getElementById('report-user-id').value, r=document.getElementById('report-reason').value; if(!r) return; await fetch('/api/report',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({reportedUserId:i,reason:r})}); showToast('Report sent.'); closeModals(); }
+        async function submitReport(){ const i=Number(document.getElementById('report-user-id').value), r=document.getElementById('report-reason').value.trim(); if(!r) return showToast('Enter a reason for the report.','error'); try { await apiRequest('/api/report',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({reportedUserId:i,reason:r})}); showToast('Report sent.'); closeModals(); } catch(error) { reportRequestError(error); } }
 
         function openForgotPassword(){ document.getElementById('auth-view')?.classList.add('hidden'); document.getElementById('forgot-modal')?.classList.remove('hidden'); }
-        async function requestResetToken(){ const e=document.getElementById('forgot-email').value; if(!e) return showToast('Enter email','error'); await fetch('/api/forgot-password',{method:'POST',headers:apiHeaders,body:JSON.stringify({email:e})}); showToast('Token logged in terminal'); document.getElementById('forgot-step-1')?.classList.add('hidden'); document.getElementById('forgot-step-2')?.classList.remove('hidden'); }
-        async function submitNewPassword(){ const t=document.getElementById('reset-token').value, n=document.getElementById('reset-new-pass').value; if(!t||!n) return showToast('Fill all fields','error'); const r=await fetch('/api/reset-password',{method:'POST',headers:apiHeaders,body:JSON.stringify({token:t,newPassword:n})}); const d=await r.json(); if(d.error) return showToast(d.error,'error'); showToast('Password updated! Login.'); closeModals(); toggleAuthMode(true); }
+        async function requestResetToken(){ const email=document.getElementById('forgot-email').value.trim(); if(!email) return showToast('Enter your email address.','error'); try { await apiRequest('/api/forgot-password',{method:'POST',headers:apiHeaders,body:JSON.stringify({email})}); showToast('If an account exists, a password reset link has been sent.'); closeModals(); } catch(error) { reportRequestError(error); } }
+        async function submitNewPassword(){ const token=document.getElementById('reset-token').value, password=document.getElementById('reset-new-pass').value; if(password.length < 8) return showToast('Password must be at least 8 characters.','error'); try { await apiRequest('/api/reset-password',{method:'POST',headers:apiHeaders,body:JSON.stringify({token,newPassword:password})}); showToast('Password updated. You can now log in.'); closeModals(); toggleAuthMode(true); } catch(error) { reportRequestError(error); } }
 
         // ADMIN
         function switchAdminTab(tabName) {
@@ -699,71 +826,89 @@
             document.querySelectorAll('button[id^="tab-"]').forEach(b => { b.classList.remove('border-b-2', 'border-blue-500', 'bg-slate-800/50', 'text-white'); b.classList.add('text-slate-400'); });
             document.getElementById(`view-${tabName}`)?.classList.remove('hidden');
             const activeBtn = document.getElementById(`tab-${tabName}`); if(activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('border-b-2', 'border-blue-500', 'bg-slate-800/50', 'text-white'); }
-            loadAdminData();
+            loadAdminData().catch(reportRequestError);
         }
 
         async function loadAdminData(){ 
             if(!currentUser?.isAdmin) return;
             
-            let res=await fetch('/api/admin/pending',{headers:{'Authorization':`Bearer ${getToken()}`}}); let pend=await res.json(); 
+            const pend=await apiRequest('/api/admin/pending',{headers:{'Authorization':`Bearer ${getToken()}`}});
             const pendList = document.getElementById('admin-pending-list');
-            if(pendList) pendList.innerHTML=pend.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No pending adults.</td></tr>`:pend.map(u=>`
+            if(pendList) pendList.innerHTML=pend.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No pending ID approvals.</td></tr>`:pend.map(u=>`
             <tr>
                 <td class="p-4 text-white">
-                    <p class="font-bold text-blue-400">Student: ${u.name} ${u.isReverify?'<span class="text-xs bg-yellow-500 px-1 rounded text-black">Update</span>':''}</p>
-                    <p class="text-xs text-slate-400">DOB: ${u.dob || 'N/A'}</p>
+                    <p class="font-bold text-blue-400">Student: ${escapeHtml(u.name)} ${u.isReverify?'<span class="text-xs bg-yellow-500 px-1 rounded text-black">Update</span>':''}</p>
+                    <p class="text-xs text-slate-400">DOB: ${escapeHtml(u.dob || 'N/A')}</p>
                 </td>
                 <td class="p-4 text-slate-300">
-                    <p>${u.gradeOrYear} @ ${u.schoolName}</p>
-                    <p class="text-xs text-slate-400 mt-1">${u.email}</p>
+                    <p>${escapeHtml(u.gradeOrYear)} @ ${escapeHtml(u.schoolName)}</p>
+                    <p class="text-xs text-slate-400 mt-1">${escapeHtml(u.email)}</p>
                 </td>
                 <td class="p-4 flex flex-col gap-2">
-                    <a href="${u.idCardUrl}" target="_blank" class="text-blue-400 hover:underline text-sm">📄 Student ID</a>
+                    ${safeUploadUrl(u.idCardUrl) !== '#' ? `<a href="${escapeHtml(safeUploadUrl(u.idCardUrl))}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline text-sm">Student ID</a>` : '<span class="text-slate-500">No ID uploaded</span>'}
                 </td>
                 <td class="p-4">
                     <div class="flex gap-2">
-                        <button onclick="approveUser(${u.id})" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-500">Approve</button>
-                        <button onclick="rejectUser(${u.id})" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-500">Reject</button>
+                        <button onclick="approveUser(${Number(u.id)})" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-500">Approve</button>
+                        <button onclick="rejectUser(${Number(u.id)})" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-500">Reject</button>
                     </div>
                 </td>
             </tr>`).join('');
             
-            let uRes=await fetch('/api/admin/users',{headers:{'Authorization':`Bearer ${getToken()}`}}); let users=await uRes.json();
+            const users=await apiRequest('/api/admin/users',{headers:{'Authorization':`Bearer ${getToken()}`}});
             const userList = document.getElementById('admin-users-list');
-            if(userList) userList.innerHTML=users.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No users.</td></tr>`:users.map(u=>`<tr><td class="p-4 text-white"><p class="font-bold">${u.name}</p><span class="text-xs px-2 py-1 bg-slate-700 rounded uppercase">${u.role}</span></td><td class="p-4 text-sm text-slate-300"><p>${u.email} ${u.isEmailVerified?'✅':'❌'}</p><p>${u.phone} ${u.isPhoneVerified?'✅':'❌'}</p></td><td class="p-4 text-slate-300 font-mono">${u.upiId||'Not Set'}</td><td class="p-4"><button onclick="adminDeleteUser(${u.id})" class="text-red-400 hover:underline">Delete</button></td></tr>`).join('');
+            if(userList) userList.innerHTML=users.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No users.</td></tr>`:users.map(u=>`<tr><td class="p-4 text-white"><p class="font-bold">${escapeHtml(u.name)}</p><span class="text-xs px-2 py-1 bg-slate-700 rounded uppercase">${escapeHtml(u.role)}</span></td><td class="p-4 text-sm text-slate-300"><p>${escapeHtml(u.email)} ${u.isEmailVerified?'✅':'❌'}</p><p>${escapeHtml(u.phone)} ${u.isPhoneVerified?'✅':'❌'}</p></td><td class="p-4 text-slate-300 font-mono">${escapeHtml(u.upiId||'Not Set')}</td><td class="p-4"><button onclick="adminDeleteUser(${Number(u.id)})" class="text-red-400 hover:underline">Delete</button></td></tr>`).join('');
 
-            let bRes=await fetch('/api/admin/banking',{headers:{'Authorization':`Bearer ${getToken()}`}}); let bank=await bRes.json();
+            const bank=await apiRequest('/api/admin/banking',{headers:{'Authorization':`Bearer ${getToken()}`}});
             const vol = document.getElementById('admin-vol'); if(vol) vol.innerText = `₹${bank.volume}`; 
             const prof = document.getElementById('admin-prof'); if(prof) prof.innerText = `₹${bank.profit}`;
             
             const escList = document.getElementById('admin-escrow-list');
-            if(escList) escList.innerHTML=bank.escrowFunds.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No funds currently in escrow.</td></tr>`:bank.escrowFunds.map(e=>`<tr><td class="p-4 text-white font-bold">${e.title}<br><span class="text-xs text-blue-400 uppercase">${e.status.replace('_',' ')}</span></td><td class="p-4 text-slate-300">${e.buyerName}</td><td class="p-4 text-slate-300">${e.devName}</td><td class="p-4 text-green-400 font-bold">₹${e.budget}<br><span class="text-xs text-slate-500">UTR: ${e.fundedUtr}</span></td></tr>`).join('');
+            if(escList) escList.innerHTML=bank.escrowFunds.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No funds currently in escrow.</td></tr>`:bank.escrowFunds.map(e=>`<tr><td class="p-4 text-white font-bold">${escapeHtml(e.title)}<br><span class="text-xs text-blue-400 uppercase">${escapeHtml((e.status || '').replace('_',' '))}</span></td><td class="p-4 text-slate-300">${escapeHtml(e.buyerName)}</td><td class="p-4 text-slate-300">${escapeHtml(e.devName || '—')}</td><td class="p-4 text-green-400 font-bold">₹${Number(e.budget) || 0}<br><span class="text-xs text-slate-500">UTR: ${escapeHtml(e.fundedUtr)}</span>${!e.fundingVerified ? `<button onclick="confirmFunding(${Number(e.id)})" class="block mt-2 bg-green-600 text-white px-3 py-1 rounded text-sm">Verify funding</button>` : '<span class="block mt-2 text-xs text-green-400">Verified</span>'}</td></tr>`).join('');
             
             const payList = document.getElementById('admin-payouts-list');
-            if(payList) payList.innerHTML=bank.pendingPayouts.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No pending payouts.</td></tr>`:bank.pendingPayouts.map(d=>`<tr><td class="p-4 text-white font-bold">${d.devName}</td><td class="p-4 text-slate-300 font-mono">${d.upiId||'No UPI'}</td><td class="p-4 text-green-400 font-bold">₹${Math.floor(d.budget * 0.9)} <span class="text-xs text-slate-500">(10% fee taken)</span></td><td class="p-4"><button onclick="payJob(${d.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 text-sm font-bold">Record UTR & Pay</button></td></tr>`).join('');
+            if(payList) payList.innerHTML=bank.pendingPayouts.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No pending payouts.</td></tr>`:bank.pendingPayouts.map(d=>`<tr><td class="p-4 text-white font-bold">${escapeHtml(d.devName)}</td><td class="p-4 text-slate-300 font-mono">${escapeHtml(d.upiId||'No UPI')}</td><td class="p-4 text-green-400 font-bold">₹${Number(d.budget) - Math.floor(Number(d.budget) * 0.1)} <span class="text-xs text-slate-500">(10% fee taken)</span></td><td class="p-4"><button onclick="payJob(${Number(d.id)})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 text-sm font-bold">Record UTR & Pay</button></td></tr>`).join('');
 
-            let fbRes=await fetch('/api/admin/feedbacks',{headers:{'Authorization':`Bearer ${getToken()}`}}); let fbs=await fbRes.json();
+            const fbs=await apiRequest('/api/admin/feedbacks',{headers:{'Authorization':`Bearer ${getToken()}`}});
             const fbList = document.getElementById('admin-feedbacks-list');
-            if(fbList) fbList.innerHTML=fbs.length===0?`<tr><td colspan="3" class="p-4 text-center text-slate-500">No feedbacks.</td></tr>`:fbs.map(f=>`<tr><td class="p-4"><p class="font-bold text-white">${f.name}</p></td><td class="p-4 text-blue-300 font-bold">${f.type}</td><td class="p-4 text-slate-300">${f.message}</td></tr>`).join('');
+            if(fbList) fbList.innerHTML=fbs.length===0?`<tr><td colspan="3" class="p-4 text-center text-slate-500">No feedback.</td></tr>`:fbs.map(f=>`<tr><td class="p-4"><p class="font-bold text-white">${escapeHtml(f.name)}</p></td><td class="p-4 text-blue-300 font-bold">${escapeHtml(f.type)}</td><td class="p-4 text-slate-300">${escapeHtml(f.message)}</td></tr>`).join('');
             
-            let repRes=await fetch('/api/admin/reports',{headers:{'Authorization':`Bearer ${getToken()}`}}); let reports=await repRes.json(); 
+            const reports=await apiRequest('/api/admin/reports',{headers:{'Authorization':`Bearer ${getToken()}`}});
             const repList = document.getElementById('admin-reports-list');
-            if(repList) repList.innerHTML=reports.length===0?`<tr><td colspan="3" class="p-4 text-center text-slate-500">No reports.</td></tr>`:reports.map(r=>`<tr><td class="p-4"><p class="font-bold text-white">${r.reportedName}</p></td><td class="p-4 text-slate-300">By ${r.reporterName}: ${r.reason}</td><td class="p-4"><button onclick="adminDeleteUser(${r.reportedUserId})" class="bg-red-600 px-3 py-1 rounded text-white text-sm">Delete User</button></td></tr>`).join(''); 
+            if(repList) repList.innerHTML=reports.length===0?`<tr><td colspan="3" class="p-4 text-center text-slate-500">No reports.</td></tr>`:reports.map(r=>`<tr><td class="p-4"><p class="font-bold text-white">${escapeHtml(r.reportedName)}</p></td><td class="p-4 text-slate-300">By ${escapeHtml(r.reporterName)}: ${escapeHtml(r.reason)}</td><td class="p-4"><button onclick="adminDeleteUser(${Number(r.reportedUserId)})" class="bg-red-600 px-3 py-1 rounded text-white text-sm">Delete User</button></td></tr>`).join('');
         }
         
-        async function approveUser(id){ await fetch(`/api/admin/verify/${id}`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('Approved!'); loadAdminData(); }
-        async function rejectUser(id){ await fetch(`/api/admin/reject/${id}`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('ID Card Rejected.'); loadAdminData(); }
-        async function adminDeleteUser(id){ customConfirm("Delete User?", "Are you sure? This deletes them permanently.", async () => { await fetch(`/api/admin/users/${id}`,{method:'DELETE',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('User Deleted.'); loadAdminData(); }); }
+        async function approveUser(id){ try { await apiRequest(`/api/admin/verify/${Number(id)}`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('Approved!'); await loadAdminData(); } catch(error) { reportRequestError(error); } }
+        async function rejectUser(id){ try { await apiRequest(`/api/admin/reject/${Number(id)}`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('ID card rejected.'); await loadAdminData(); } catch(error) { reportRequestError(error); } }
+        async function adminDeleteUser(id){ customConfirm("Delete User?", "Are you sure? This deletes them permanently.", async () => { try { await apiRequest(`/api/admin/users/${Number(id)}`,{method:'DELETE',headers:{'Authorization':`Bearer ${getToken()}`}}); showToast('User deleted.'); await loadAdminData(); } catch(error) { reportRequestError(error); } }); }
+        async function confirmFunding(id) {
+            if(!confirm('Confirm that the transfer has been verified in the escrow account?')) return;
+            try {
+                await apiRequest(`/api/admin/verify-funding/${Number(id)}`, {method:'POST', headers:{'Authorization':`Bearer ${getToken()}`}});
+                showToast('Funding verified. The project can now start.');
+                await loadAdminData();
+            } catch(error) { reportRequestError(error); }
+        }
         
         async function payJob(id){ 
             const utr = prompt("Enter the 12-digit UTR for this payout:");
-            if(!utr || utr.length !== 12) return showToast("Valid 12-digit UTR required", "error");
-            await fetch(`/api/admin/pay-job/${id}`, {method:'POST', headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({utr})}); 
-            showToast('Developer paid and UTR recorded.'); 
-            loadAdminData(); 
+            if(!/^[0-9]{12}$/.test(utr || '')) return showToast("Valid 12-digit UTR required", "error");
+            try {
+                await apiRequest(`/api/admin/pay-job/${Number(id)}`, {method:'POST', headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({utr})});
+                showToast('Developer payment recorded.');
+                await loadAdminData();
+            } catch(error) { reportRequestError(error); }
         }
 
         function logout(){ localStorage.removeItem('token'); location.reload(); }
+        const resetTokenFromUrl = new URLSearchParams(location.search).get('resetToken');
+        if(resetTokenFromUrl && /^[a-f0-9]{64}$/.test(resetTokenFromUrl)) {
+            document.getElementById('reset-token').value = resetTokenFromUrl;
+            document.getElementById('forgot-step-1').classList.add('hidden');
+            document.getElementById('forgot-step-2').classList.remove('hidden');
+            openForgotPassword();
+            history.replaceState(null, '', location.pathname);
+        }
         if (getToken()) loadApp();
     </script>
 </body>
