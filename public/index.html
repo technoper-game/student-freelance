@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechnoDev | The Gen-Z Freelance Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-modal { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .chat-scroll::-webkit-scrollbar { width: 6px; } .chat-scroll::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 10px; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } } .animate-float { animation: float 6s ease-in-out infinite; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-up { animation: fadeUp 1s ease-out forwards; }
+        .gradient-text { background: linear-gradient(to right, #a855f7, #3b82f6, #ec4899); -webkit-background-clip: text; color: transparent; }
+        .neon-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        .tab-active { background-color: rgba(59, 130, 246, 0.2); border-left: 4px solid #3b82f6; color: white; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-slate-900 text-gray-100 min-h-screen font-sans pb-20 overflow-x-hidden selection:bg-purple-500 selection:text-white">
+
+    <div id="toast-container" class="fixed bottom-5 right-5 space-y-3 z-[100]"></div>
+    
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none opacity-40">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] animate-float"></div>
+        <div class="absolute top-40 right-20 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[120px] animate-float" style="animation-delay: 2s;"></div>
+        <div class="absolute bottom-10 left-1/3 w-80 h-80 bg-pink-600 rounded-full mix-blend-screen filter blur-[120px] animate-float" style="animation-delay: 4s;"></div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="bg-slate-900/80 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
+            <span class="bg-gradient-to-r from-purple-500 to-blue-500 text-white font-black px-3 py-1.5 rounded-lg text-xl shadow-[0_0_15px_rgba(168,85,247,0.5)]">TD</span>
+            <div>
+                <h1 class="font-bold text-xl tracking-tight text-white hidden sm:block leading-none">TechnoDev</h1>
+                <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold hidden sm:block mt-1">The Gen-Z Freelance Hub</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span id="user-badge" class="hidden text-sm font-semibold px-3 py-1.5 rounded-full bg-blue-900/50 text-blue-300 border border-blue-700/50"></span>
+            <button id="nav-feedback-btn" onclick="openFeedbackModal()" class="hidden bg-slate-800 hover:bg-slate-700 border border-slate-700 text-gray-300 font-semibold py-1.5 px-4 rounded-full transition-all text-sm">Feedback</button>
+            <button id="nav-post-btn" onclick="openPostJobModal()" class="hidden bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-1.5 px-4 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all text-sm">+ Project</button>
+            <button id="logout-btn" onclick="logout()" class="hidden bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 font-semibold py-1.5 px-4 rounded-full transition-all text-sm">Logout</button>
+        </div>
+    </nav>
+
+    <!-- LANDING PAGE -->
+    <div id="landing-page" class="max-w-7xl mx-auto p-6 mt-10 lg:mt-24 flex flex-col lg:flex-row items-center justify-between gap-16 animate-fade-up">
+        <div class="w-full lg:w-1/2 space-y-8 text-center lg:text-left relative z-10">
+            <h1 class="text-5xl lg:text-7xl font-black leading-tight tracking-tight text-white">
+                Build the Future. <br> <span class="gradient-text">Get Paid Today.</span>
+            </h1>
+            <p class="text-lg text-slate-400 font-medium max-w-lg mx-auto lg:mx-0">
+                The premier peer-to-peer marketplace connecting forward-thinking clients with the world's most talented Gen-Z developers.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
+                <button onclick="toggleAuthMode(false)" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black px-10 py-4 rounded-full hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] transition-all transform hover:scale-105">Sign Up</button>
+                <button onclick="toggleAuthMode(true)" class="bg-slate-800/80 backdrop-blur-md border border-slate-600 text-white font-bold px-10 py-4 rounded-full hover:bg-slate-700 transition-all">Login</button>
+            </div>
+        </div>
+        <div class="w-full lg:w-1/2 relative hidden md:block">
+            <div class="absolute inset-0 bg-gradient-to-tr from-purple-600/20 to-blue-600/20 rounded-[3rem] filter blur-3xl"></div>
+            <div class="glass-card p-8 rounded-[2rem] border border-slate-700/50 neon-glow relative">
+                <div class="flex justify-between items-center border-b border-slate-700/50 pb-4 mb-6">
+                    <h3 class="font-bold text-white text-lg">Live Marketplace</h3>
+                    <span class="flex h-3 w-3 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-800/60 p-4 rounded-xl flex justify-between items-center border border-slate-700">
+                        <div><p class="font-bold text-slate-200">React Frontend Development</p><p class="text-xs text-slate-400 mt-1">Client: Startup Nexus</p></div>
+                        <span class="bg-green-900/50 text-green-400 font-black px-3 py-1 rounded-lg">₹4,500</span>
+                    </div>
+                    <div class="bg-slate-800/60 p-4 rounded-xl flex justify-between items-center border border-slate-700">
+                        <div><p class="font-bold text-slate-200">Discord Bot (Python)</p><p class="text-xs text-slate-400 mt-1">Client: Gaming Org</p></div>
+                        <span class="bg-green-900/50 text-green-400 font-black px-3 py-1 rounded-lg">₹2,000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="max-w-7xl mx-auto p-6">
+        
+        <!-- AUTH VIEW -->
+        <div id="auth-view" class="max-w-md mx-auto glass-card p-8 rounded-3xl shadow-2xl hidden">
+            <div id="auth-tabs" class="flex space-x-2 mb-6 hidden">
+                <button type="button" id="tab-adult" onclick="setAgeTab('adult')" class="pb-2 border-b-2 border-blue-500 font-bold text-white w-1/2 transition-colors">18 & Above</button>
+                <button type="button" id="tab-minor" onclick="setAgeTab('minor')" class="pb-2 text-slate-400 font-bold border-b border-slate-700 w-1/2 transition-colors">Under 18</button>
+            </div>
+            
+            <h2 class="text-3xl font-extrabold mb-6 text-center text-white" id="auth-title">Welcome Back</h2>
+            <form id="auth-form" class="space-y-4">
+                <input type="email" id="email" placeholder="Email Address" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500 transition-colors">
+                <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500 transition-colors">
+                
+                <div id="reg-fields" class="hidden space-y-4">
+                    <input type="text" id="name" placeholder="Full Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:border-blue-500 outline-none">
+                    <input type="tel" id="phone" placeholder="WhatsApp Number (10 digits)" pattern="[0-9]{10}" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:border-blue-500 outline-none">
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="text-xs text-slate-400 ml-1">Date of Birth</label>
+                            <input type="date" id="dob" onchange="checkSchoolLogic()" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
+                        </div>
+                        <div class="w-1/2 pt-4">
+                            <input type="text" id="gradeOrYear" placeholder="Standard / Year" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    <select id="role" onchange="checkSchoolLogic()" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl font-medium text-gray-300 outline-none focus:border-blue-500">
+                        <option value="buyer">🎯 I want to hire a student (Buyer)</option>
+                        <option value="developer">💻 I want to code & earn (Developer)</option>
+                    </select>
+                    <div id="school-container" class="transition-all"><input type="text" id="schoolName" placeholder="School Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500"></div>
+                    <div id="id-upload-container" class="hidden border-2 border-dashed border-purple-500/50 bg-purple-900/20 p-6 rounded-xl text-center">
+                        <p class="text-sm font-semibold text-purple-300 mb-2">Upload School/College ID</p>
+                        <input type="file" id="idCard" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white cursor-pointer">
+                    </div>
+                    
+                    <!-- New Minor Consent Fields (No ID Upload) -->
+                    <div id="minor-fields" class="hidden space-y-4 border-t border-slate-700 pt-4">
+                        <p class="text-sm font-bold text-purple-400">Parent Consent Required</p>
+                        <input type="text" id="parentName" placeholder="Parent's Legal Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
+                        <input type="email" id="parentEmail" placeholder="Parent's Email Address" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
+                        <input type="text" id="parentUpi" placeholder="Parent's Payout UPI ID" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none focus:border-blue-500">
+                        <p class="text-[10px] text-slate-400 ml-1">An approval link will be emailed to your parent directly.</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center text-sm px-1">
+                    <a href="#" onclick="openForgotPassword()" id="forgot-btn" class="text-slate-400 hover:text-white transition">Forgot Password?</a>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all mt-4 hover:opacity-90">Continue</button>
+            </form>
+
+            <p class="text-center mt-6 text-sm font-medium"><a href="#" onclick="toggleAuthMode()" class="text-slate-400 hover:text-white transition" id="auth-toggle">Don't have an account? Sign Up</a></p>
+        </div>
+
+        <!-- USER DASHBOARD SIDEBAR STRUCTURE -->
+        <div id="dashboard-view" class="hidden w-full flex flex-col md:flex-row gap-6 animate-fade-up">
+            
+            <aside class="w-full md:w-64 glass-card rounded-2xl p-4 h-fit flex flex-col gap-2 shrink-0">
+                <button onclick="switchUserTab('overview')" id="btn-tab-overview" class="user-tab-btn tab-active text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">📊 Overview</button>
+                <button onclick="switchUserTab('jobs')" id="btn-tab-jobs" class="user-tab-btn text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">💼 Jobs & Projects</button>
+                <button onclick="switchUserTab('proposals')" id="btn-tab-proposals" class="user-tab-btn hidden text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">📝 Proposals Sent</button>
+                <button onclick="switchUserTab('workspace')" id="btn-tab-workspace" class="user-tab-btn text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">🚀 Workspace</button>
+                <button onclick="switchUserTab('users')" id="btn-tab-users" class="user-tab-btn text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">👥 Users</button>
+                <button onclick="switchUserTab('profile')" id="btn-tab-profile" class="user-tab-btn text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">👤 My Profile</button>
+                <button onclick="switchUserTab('payments')" id="btn-tab-payments" class="user-tab-btn text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">💳 Payments</button>
+                <button onclick="switchUserTab('settings')" id="btn-tab-settings" class="user-tab-btn text-left px-4 py-3 rounded-lg text-slate-300 transition-all hover:bg-slate-800">⚙️ Settings</button>
+            </aside>
+
+            <div class="flex-1 w-full relative">
+                
+                <div id="verification-banner" class="bg-gradient-to-r from-yellow-600 to-amber-600 text-white p-4 rounded-xl shadow-md hidden flex items-center justify-between mb-6">
+                    <div><p class="font-black text-lg">⏳ Verification Pending</p><p class="text-sm font-medium">Please wait for admin/parent approval.</p></div>
+                </div>
+
+                <div id="rejection-banner" class="bg-gradient-to-r from-red-600 to-red-800 text-white p-4 rounded-xl shadow-md hidden flex items-center justify-between mb-6">
+                    <div><p class="font-black text-lg">❌ ID Card Rejected</p><p class="text-sm font-medium">Your student verification was rejected.</p></div>
+                </div>
+
+                <!-- Tab 1: Overview Stats -->
+                <div id="user-tab-overview" class="user-tab-content space-y-6">
+                    <h2 class="text-3xl font-black text-white mb-6">Overview</h2>
+                    <div id="stats-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                </div>
+
+                <!-- Tab 2: Jobs & Projects -->
+                <div id="user-tab-jobs" class="user-tab-content hidden space-y-8">
+                    <div>
+                        <h2 id="board-title" class="text-3xl font-black text-white mb-6">Your Projects</h2>
+                        <div id="job-board" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                    </div>
+                    <div id="public-board-container" class="hidden">
+                        <h2 class="text-3xl font-black text-white mb-6 border-t border-slate-800 pt-8">Available Projects</h2>
+                        <div id="public-job-board" class="grid grid-cols-1 gap-6"></div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Proposals Sent -->
+                <div id="user-tab-proposals" class="user-tab-content hidden space-y-6">
+                    <h2 class="text-3xl font-black text-white mb-6">Proposals Sent</h2>
+                    <div id="proposals-list" class="grid grid-cols-1 gap-4"></div>
+                </div>
+
+                <!-- Tab 4: Workspace -->
+                <div id="user-tab-workspace" class="user-tab-content hidden h-[85vh]">
+                    <div id="ws-placeholder" class="glass-card rounded-3xl w-full h-full flex items-center justify-center text-slate-500 font-medium">Select a project in the Jobs tab to open it here.</div>
+                    <div id="ws-content" class="glass-card rounded-3xl w-full h-full flex flex-col md:flex-row border border-slate-700/50 overflow-hidden hidden">
+                        <div class="w-full md:w-2/3 bg-slate-900/50 flex flex-col border-r border-slate-700/50">
+                            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center bg-slate-800/50"><h3 id="ws-title" class="font-bold text-lg text-white">Project Workspace</h3></div>
+                            <div id="ws-chat-box" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4"></div>
+                            <div class="p-4 border-t border-slate-700/50 bg-slate-800/50"><div class="flex space-x-2"><input type="text" id="ws-msg-input" placeholder="Type..." class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white"><button onclick="sendWorkspaceMessage()" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-bold">Send</button></div></div>
+                        </div>
+                        <div class="w-full md:w-1/3 p-6 flex flex-col bg-slate-800/30 overflow-y-auto">
+                            <div class="flex justify-between items-center mb-6 hidden md:flex"><span id="ws-status" class="px-3 py-1 rounded-full text-xs font-black bg-blue-900/50 text-blue-300">STATUS</span></div>
+                            
+                            <!-- Project UTR Funding Box -->
+                            <div id="ws-payment-box" class="hidden bg-slate-900/80 p-5 rounded-2xl border border-blue-500/50 mb-6 text-center">
+                                <h4 class="font-bold text-blue-400 mb-2">Fund Escrow via UPI</h4>
+                                <div class="bg-white p-2 w-32 h-32 mx-auto mb-2 rounded-lg flex items-center justify-center text-slate-400 text-xs text-center border-2 border-dashed border-slate-300">
+                                    [Your QR Code Here]
+                                </div>
+                                <p class="text-xs text-slate-400 mb-2">UPI ID: admin@upi</p>
+                                <p class="text-xs text-slate-400 mb-4">Transfer the exact project budget and paste the 12-digit UTR below.</p>
+                                <input type="text" id="payment-utr" placeholder="12-digit UTR Number" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white mb-4" maxlength="12">
+                                <button onclick="submitUtrFunding()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-500 shadow transition">Confirm Transfer</button>
+                            </div>
+
+                            <div id="ws-dev-payment-waiting" class="hidden bg-yellow-900/20 p-4 rounded-xl border border-yellow-700/50 mb-6 text-center"><p class="text-sm font-bold text-yellow-400">Awaiting Buyer Confirmation</p><p class="text-xs text-slate-400 mt-1">Do not start working until funds are confirmed.</p></div>
+                            
+                            <div id="ws-dev-actions" class="hidden space-y-4">
+                                <h4 class="font-bold text-white mb-2 border-b border-slate-700 pb-2">Dev Tools</h4>
+                                <input type="url" id="ws-submit-url" placeholder="https://github.com/..." class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white">
+                                <button onclick="submitWork()" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl hover:bg-green-400">Submit Work</button>
+                                <div id="ws-dev-payout-area" class="mt-4 pt-4 border-t border-slate-700 hidden"></div>
+                            </div>
+                            
+                            <div id="ws-buyer-actions" class="hidden space-y-4">
+                                <h4 class="font-bold text-white mb-2 border-b border-slate-700 pb-2">Review Delivery</h4>
+                                <div id="ws-deliverable-box" class="hidden bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+                                    <p class="text-sm font-bold text-white mb-1">Work Submitted:</p>
+                                    <a href="#" id="ws-deliverable-link" target="_blank" class="text-sm text-blue-400 hover:underline break-all">View Link</a>
+                                </div>
+                                <div id="ws-review-box" class="hidden mt-4 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+                                    <p class="text-sm font-bold text-white mb-2">Approve & Release Funds</p>
+                                    <select id="ws-review-score" class="w-full mb-2 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="1">⭐</option></select>
+                                    <textarea id="ws-review-text" class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-white h-24 mb-2"></textarea>
+                                    <button onclick="completeJob()" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-500">Approve</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Users (Community) -->
+                <div id="user-tab-users" class="user-tab-content hidden space-y-6">
+                    <h2 class="text-3xl font-black text-white mb-6">Community</h2>
+                    <div id="community-list" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                </div>
+
+                <!-- Tab 6: My Profile -->
+                <div id="user-tab-profile" class="user-tab-content hidden space-y-6">
+                    <h2 class="text-3xl font-black text-white mb-6">My Profile</h2>
+                    <div class="glass-card p-8 rounded-3xl w-full max-w-2xl">
+                        <h3 id="my-profile-name" class="text-2xl font-bold text-white mb-2"></h3>
+                        <p id="my-profile-role" class="text-sky-400 font-medium mb-4 uppercase tracking-wider text-sm"></p>
+                        <div class="flex gap-6 mb-6 text-sm text-slate-300">
+                            <div class="bg-slate-800 px-4 py-2 rounded-xl"><span id="my-followers" class="font-bold text-white text-lg block">0</span> Followers</div>
+                            <div class="bg-slate-800 px-4 py-2 rounded-xl"><span id="my-following" class="font-bold text-white text-lg block">0</span> Following</div>
+                        </div>
+                        <div id="my-profile-reviews" class="space-y-3 pt-6 border-t border-slate-700"></div>
+                    </div>
+                </div>
+
+                <!-- Tab 7: Payments -->
+                <div id="user-tab-payments" class="user-tab-content hidden space-y-6">
+                    <h2 class="text-3xl font-black text-white mb-6">Financial Dashboard</h2>
+                    
+                    <div class="flex space-x-2 border-b border-slate-700 mb-6 overflow-x-auto">
+                        <button onclick="switchPaymentSubTab('wallet')" id="subtab-wallet" class="px-6 py-3 font-bold text-white border-b-2 border-blue-500 bg-slate-800/50 rounded-t-lg">Wallet</button>
+                        <button onclick="switchPaymentSubTab('invoice')" id="subtab-invoice" class="px-6 py-3 font-bold text-slate-400 hover:text-white">Invoices</button>
+                    </div>
+
+                    <div id="view-wallet" class="payment-view space-y-4">
+                        <div class="glass-card p-8 rounded-2xl border border-blue-500/30">
+                            <p class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Available Balance</p>
+                            <p id="payments-wallet-balance" class="text-5xl font-black text-green-400">₹0</p>
+                            <p class="text-slate-400 text-xs mt-2">Project payouts are handled directly in the Workspace tab.</p>
+                        </div>
+                    </div>
+
+                    <div id="view-invoice" class="payment-view hidden space-y-4">
+                        <div class="glass-card p-6 rounded-2xl border border-slate-700">
+                            <h3 class="font-bold text-white mb-4">Transaction History</h3>
+                            <div class="overflow-hidden rounded-xl border border-slate-700">
+                                <table class="w-full text-left">
+                                    <thead class="bg-slate-800/50 border-b border-slate-700">
+                                        <tr><th class="p-4 text-slate-300">Date</th><th class="p-4 text-slate-300">Type</th><th class="p-4 text-slate-300">Amount</th><th class="p-4 text-slate-300">Status</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-700/50" id="invoice-history-list">
+                                        <tr><td colspan="4" class="p-4 text-slate-500 text-center">No transactions found.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 8: Settings -->
+                <div id="user-tab-settings" class="user-tab-content hidden space-y-6">
+                    <h2 class="text-3xl font-black text-white mb-6">Settings</h2>
+                    <div class="glass-card p-8 rounded-3xl shadow-2xl max-w-2xl w-full">
+                        <form id="edit-profile-form" class="space-y-4">
+                            <input type="text" id="edit-name" placeholder="Full Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
+                            <input type="email" id="edit-email" placeholder="Email Address" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
+                            <input type="tel" id="edit-phone" placeholder="Phone Number" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
+                            <input type="date" id="edit-dob" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none">
+                            <div id="edit-dev-fields" class="space-y-4 border-t border-slate-700 pt-4">
+                                <p class="text-sm font-bold text-blue-400">Developer Info</p>
+                                <input type="text" id="edit-school" placeholder="School Name" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white">
+                                <input type="text" id="edit-grade" placeholder="Standard / Year" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white">
+                                <div class="border-2 border-dashed border-slate-600 bg-slate-800/30 p-4 rounded-xl">
+                                    <p class="text-xs text-slate-400 mb-2">Update ID Card</p>
+                                    <input type="file" id="edit-idCard" accept="image/*" class="w-full text-xs text-slate-400">
+                                </div>
+                            </div>
+                            <div id="edit-upi-fields" class="space-y-2 border-t border-slate-700 pt-4">
+                                <p class="text-sm font-bold text-green-400">Payout Details (UPI ID)</p>
+                                <input type="text" id="edit-upi" placeholder="e.g. 9876543210@ybl" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white">
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white rounded-xl font-bold py-3 hover:bg-blue-500 mt-4 transition-all">Save Profile Changes</button>
+                        </form>
+                        <div class="mt-8 border-t border-slate-700 pt-6"><h4 class="text-lg font-bold text-white mb-4">Change Password</h4><div class="space-y-4"><input type="password" id="edit-current-pass" placeholder="Current Password" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none"><input type="password" id="edit-new-pass" placeholder="New Password" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none"><button onclick="changePasswordInsideProfile()" class="w-full bg-slate-700 text-white rounded-xl font-bold py-3 hover:bg-slate-600 transition-all">Update Password</button></div></div>
+                        <div class="mt-8 border-t border-red-900/50 pt-6"><h4 class="text-lg font-bold text-red-500 mb-2">Danger Zone</h4><button onclick="deleteMyAccount()" class="w-full bg-red-600/20 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white font-bold py-3 rounded-xl transition">Delete My Account Permanently</button></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ADMIN DASHBOARD W/ TABS -->
+        <div id="admin-dashboard" class="hidden animate-fade-up">
+            <div class="flex space-x-2 border-b border-slate-700 mb-8 overflow-x-auto">
+                <button onclick="switchAdminTab('approvals')" id="tab-approvals" class="px-6 py-3 font-bold text-white border-b-2 border-blue-500 bg-slate-800/50 rounded-t-lg">Approvals</button>
+                <button onclick="switchAdminTab('users')" id="tab-users" class="px-6 py-3 font-bold text-slate-400 hover:text-white">All Users</button>
+                <button onclick="switchAdminTab('banking')" id="tab-banking" class="px-6 py-3 font-bold text-slate-400 hover:text-white">Banking & Payouts</button>
+                <button onclick="switchAdminTab('feedbacks')" id="tab-feedbacks" class="px-6 py-3 font-bold text-slate-400 hover:text-white">Feedbacks</button>
+                <button onclick="switchAdminTab('reports')" id="tab-reports" class="px-6 py-3 font-bold text-slate-400 hover:text-white text-red-400">Reports</button>
+            </div>
+
+            <div id="view-approvals" class="admin-view space-y-4">
+                <h2 class="text-2xl font-black text-white mb-4">Pending ID Approvals</h2>
+                <div class="glass-card rounded-2xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-800/50 border-b border-slate-700">
+                            <tr><th class="p-4">User & Parent Details</th><th class="p-4">School & Contact</th><th class="p-4">ID Cards</th><th class="p-4">Action</th></tr>
+                        </thead>
+                        <tbody id="admin-pending-list" class="divide-y divide-slate-700/50"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="view-users" class="admin-view hidden space-y-4"><h2 class="text-2xl font-black text-white mb-4">Registered Users</h2><div class="glass-card rounded-2xl overflow-hidden"><table class="w-full text-left"><thead class="bg-slate-800/50 border-b border-slate-700"><tr><th class="p-4">Name / Role</th><th class="p-4">Contact & Verification</th><th class="p-4">UPI ID</th><th class="p-4">Action</th></tr></thead><tbody id="admin-users-list" class="divide-y divide-slate-700/50"></tbody></table></div></div>
+            <div id="view-banking" class="admin-view hidden space-y-6">
+                <h2 class="text-2xl font-black text-white mb-4">Platform Banking & Escrow</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-slate-800/80 p-6 rounded-2xl shadow-lg border border-blue-500/30"><p class="text-sm text-slate-400 font-bold uppercase tracking-wider mb-1">Total Volume</p><p id="admin-vol" class="text-3xl font-black text-white">₹0</p></div>
+                    <div class="bg-slate-800/80 p-6 rounded-2xl shadow-lg border border-green-500/30"><p class="text-sm text-slate-400 font-bold uppercase tracking-wider mb-1">Platform Profit (10%)</p><p id="admin-prof" class="text-3xl font-black text-green-400">₹0</p></div>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-4 mt-6">Funds Held in Escrow</h3><div class="glass-card rounded-2xl overflow-hidden mb-8"><table class="w-full text-left"><thead class="bg-slate-800/50 border-b border-slate-700"><tr><th class="p-4">Project</th><th class="p-4">Buyer</th><th class="p-4">Developer</th><th class="p-4">Amount Held</th></tr></thead><tbody id="admin-escrow-list" class="divide-y divide-slate-700/50"></tbody></table></div>
+                <h3 class="text-xl font-bold text-white mb-4">Pending Developer Payouts</h3><div class="glass-card rounded-2xl overflow-hidden"><table class="w-full text-left"><thead class="bg-slate-800/50 border-b border-slate-700"><tr><th class="p-4">Developer</th><th class="p-4">UPI Details</th><th class="p-4">Final Amount</th><th class="p-4">Action</th></tr></thead><tbody id="admin-payouts-list" class="divide-y divide-slate-700/50"></tbody></table></div>
+            </div>
+            <div id="view-feedbacks" class="admin-view hidden space-y-4"><h2 class="text-2xl font-black text-blue-400 mb-4">User Feedbacks</h2><div class="glass-card rounded-2xl overflow-hidden"><table class="w-full text-left"><thead class="bg-blue-900/20 border-b border-blue-900/50"><tr><th class="p-4 text-blue-400">User</th><th class="p-4 text-blue-400">Type</th><th class="p-4 text-blue-400">Message</th></tr></thead><tbody id="admin-feedbacks-list" class="divide-y divide-slate-700/50"></tbody></table></div></div>
+            <div id="view-reports" class="admin-view hidden space-y-4"><h2 class="text-2xl font-black text-red-500 mb-4">Reported Users</h2><div class="glass-card rounded-2xl overflow-hidden"><table class="w-full text-left"><thead class="bg-red-900/20 border-b border-red-900/50"><tr><th class="p-4 text-red-400">User</th><th class="p-4 text-red-400">Reporter & Reason</th><th class="p-4 text-red-400">Action</th></tr></thead><tbody id="admin-reports-list" class="divide-y divide-slate-700/50"></tbody></table></div></div>
+        </div>
+    </div>
+
+    <!-- OTP VERIFICATION MODAL -->
+    <div id="otp-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-[120] p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center"><h3 class="text-2xl font-bold text-white mb-2">Verify Phone Number</h3><p class="text-slate-400 mb-6 text-sm">We sent a 4-digit code to your WhatsApp.</p><input type="text" id="otp-input" placeholder="0000" maxlength="4" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-center text-2xl font-bold text-white tracking-widest outline-none mb-6 focus:border-blue-500"><button onclick="verifyPhoneOtp()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">Verify & Login</button><button onclick="closeModals()" class="mt-4 text-sm text-slate-500 hover:text-white">Cancel</button></div></div>
+
+    <!-- UI MODALS -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[110] backdrop-blur-sm p-4"><div class="glass-modal p-8 rounded-3xl max-w-sm w-full text-center"><h3 id="confirm-title" class="text-2xl font-bold text-white mb-2">Are you sure?</h3><p id="confirm-text" class="text-slate-400 mb-6 text-sm">This action cannot be undone.</p><div class="flex justify-center space-x-4"><button onclick="closeConfirmModal()" class="px-6 py-2 rounded-xl text-slate-300 bg-slate-800 hover:bg-slate-700 font-bold">Cancel</button><button id="confirm-yes-btn" onclick="if(confirmAction) confirmAction(); closeConfirmModal();" class="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold">Yes</button></div></div></div>
+    
+    <div id="post-job-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl shadow-2xl max-w-lg w-full relative"><button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-white font-bold text-2xl">&times;</button><h2 class="text-2xl font-extrabold mb-6 text-white">🚀 Post a New Project</h2><div class="space-y-4"><input type="text" id="job-title" placeholder="Project Title" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white outline-none"><textarea id="job-desc" placeholder="Describe the exact requirements..." class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl h-32 text-white outline-none"></textarea><div class="flex space-x-4"><div class="relative w-1/3"><span class="absolute left-4 top-3 text-slate-400 font-bold">₹</span><input type="number" id="job-budget" placeholder="Budget" class="w-full pl-8 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white"></div><button onclick="postJob()" class="w-2/3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold transition-all">Publish to Board</button></div></div></div></div>
+
+    <div id="feedback-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl shadow-2xl max-w-md w-full relative"><button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-white font-bold text-2xl">&times;</button><h2 class="text-2xl font-extrabold mb-2 text-white">Help Us Improve</h2><div class="space-y-4"><select id="feedback-type" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white"><option value="Bug">🐛 Report a Bug</option><option value="Improvement">✨ Suggest an Improvement</option></select><textarea id="feedback-message" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl h-32 text-white"></textarea><button onclick="submitFeedback()" class="w-full bg-blue-600 text-white rounded-xl font-bold py-3">Submit Feedback</button></div></div></div>
+    
+    <div id="forgot-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm"><div class="glass-modal p-8 rounded-3xl max-w-md w-full relative"><button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-white font-bold text-2xl">&times;</button><h3 class="text-2xl font-bold mb-2 text-white">Recover Password</h3><div id="forgot-step-1"><p class="text-slate-400 mb-6 text-sm">Enter email to generate token.</p><input type="email" id="forgot-email" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><button onclick="requestResetToken()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Get Token</button></div><div id="forgot-step-2" class="hidden"><p class="text-slate-400 mb-6 text-sm">Paste token from server terminal.</p><input type="text" id="reset-token" placeholder="Token" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><input type="password" id="reset-new-pass" placeholder="New Password" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white mb-4"><button onclick="submitNewPassword()" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl">Update Password</button></div></div></div>
+    
+    <div id="profile-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-md w-full relative"><button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl">&times;</button><h3 id="prof-name" class="text-2xl font-black text-white"></h3><p id="prof-school" class="text-sm text-slate-400 mb-4"></p><div class="flex gap-4 mb-4 text-sm text-slate-300"><div><span id="prof-followers" class="font-bold text-white">0</span> Followers</div><div><span id="prof-following" class="font-bold text-white">0</span> Following</div></div><div id="prof-follow-btn-container"></div><div class="flex items-center space-x-2 my-6"><span class="text-yellow-400 text-xl">★</span><span id="prof-rating" class="font-black text-xl text-white"></span><span class="text-sm text-slate-400" id="prof-jobs-count"></span></div><div id="prof-reviews" class="space-y-3 max-h-60 overflow-y-auto chat-scroll pr-2"></div></div></div>
+    
+    <div id="bid-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-md w-full"><h3 class="text-2xl font-bold mb-4 text-white">Place Bid</h3><input type="hidden" id="bid-job-id"><input type="number" id="bid-amount" oninput="calculateFee()" placeholder="₹ Amount" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl mb-2 text-white"><p id="bid-fee-text" class="text-xs text-slate-400 mb-4 hidden font-bold"></p><textarea id="bid-message" placeholder="Why hire me?" class="w-full px-4 py-3 bg-slate-800/50 text-white rounded-xl h-24 mb-6"></textarea><div class="flex justify-end space-x-3"><button onclick="closeModals()" class="px-5 py-2 rounded-xl text-slate-400">Cancel</button><button onclick="submitBid()" class="px-5 py-2 rounded-xl bg-blue-600 text-white font-bold">Submit Bid</button></div></div></div>
+    
+    <div id="view-bids-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-lg w-full max-h-[80vh] flex flex-col"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold text-white">Review Bids</h3><button onclick="closeModals()" class="text-slate-400 hover:text-white font-bold text-2xl">&times;</button></div><div id="bids-list" class="overflow-y-auto flex-1 space-y-4 pr-2"></div></div></div>
+    
+    <div id="report-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4"><div class="glass-modal p-8 rounded-3xl max-w-md w-full"><h3 class="text-2xl font-bold text-red-500 mb-2">Report Profile</h3><label class="block text-slate-400 mb-4 text-sm">Please provide a reason for reporting this user.</label><input type="hidden" id="report-user-id"><textarea id="report-reason" class="w-full px-4 py-3 bg-slate-800/50 text-white border border-slate-700 rounded-xl h-24 mb-6"></textarea><div class="flex justify-end space-x-3"><button onclick="closeModals()" class="px-5 py-2 rounded-xl text-slate-400">Cancel</button><button onclick="submitReport()" class="px-5 py-2 rounded-xl bg-red-600 text-white font-bold">Send Report</button></div></div></div>
+
+    <script>
+        let isLogin = true; let currentUser = null; let currentWorkspaceJobId = null; let chatInterval = null; let confirmAction = null; let tempLoginEmail = ''; let isMinorRoute = false;
+        const apiHeaders = { 'Content-Type': 'application/json' };
+
+        function showToast(msg, type='success'){ const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`${type==='error'?'bg-red-500/90 border-red-400':'bg-slate-800/90 border-slate-600'} border backdrop-blur-md text-white px-6 py-3 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] font-medium transform transition-all duration-300 opacity-0 translate-y-4 flex items-center`; t.innerHTML=`${type==='error'?'⚠️':'✅'} &nbsp; ${msg}`; c.appendChild(t); requestAnimationFrame(()=>t.classList.remove('opacity-0','translate-y-4')); setTimeout(()=>{t.classList.add('opacity-0','translate-y-4'); setTimeout(()=>t.remove(),300);},4000); }
+        function closeModals(){ document.querySelectorAll('.fixed.inset-0').forEach(e=>e.classList.add('hidden')); if(chatInterval) clearInterval(chatInterval); }
+        function customConfirm(title, text, onConfirm) { document.getElementById('confirm-title').innerText = title; document.getElementById('confirm-text').innerText = text; confirmAction = onConfirm; document.getElementById('confirm-modal').classList.remove('hidden'); }
+        function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); confirmAction = null; }
+        function getToken(){ return localStorage.getItem('token'); }
+
+        // Dashboard Tabs
+        function switchUserTab(tabName) {
+            if (chatInterval && tabName !== 'workspace') clearInterval(chatInterval);
+            document.querySelectorAll('.user-tab-content').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.user-tab-btn').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById(`user-tab-${tabName}`)?.classList.remove('hidden');
+            document.getElementById(`btn-tab-${tabName}`)?.classList.add('tab-active');
+            
+            if (tabName === 'settings') openProfileSettings();
+            if (tabName === 'overview') loadStats();
+            if (tabName === 'proposals') loadProposals();
+            if (tabName === 'users') loadUsersList();
+            if (tabName === 'profile') loadMyProfile();
+        }
+
+        function switchPaymentSubTab(tabName) {
+            document.querySelectorAll('.payment-view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('button[id^="subtab-"]').forEach(b => { 
+                b.classList.remove('border-b-2', 'border-blue-500', 'bg-slate-800/50', 'text-white'); 
+                b.classList.add('text-slate-400'); 
+            });
+            document.getElementById(`view-${tabName}`)?.classList.remove('hidden');
+            const activeBtn = document.getElementById(`subtab-${tabName}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('border-b-2', 'border-blue-500', 'bg-slate-800/50', 'text-white');
+            }
+        }
+
+        function toggleAuthMode(fl){ 
+            document.getElementById('landing-page')?.classList.add('hidden'); 
+            document.getElementById('auth-view')?.classList.remove('hidden'); 
+            isLogin=fl!==undefined?fl:!isLogin; 
+            if(document.getElementById('auth-title')) document.getElementById('auth-title').innerText=isLogin?'Welcome Back':'Create Account'; 
+            if(document.getElementById('auth-toggle')) document.getElementById('auth-toggle').innerText=isLogin?"Don't have an account? Sign Up":'Already have an account? Login'; 
+            if(document.getElementById('auth-submit-btn')) document.getElementById('auth-submit-btn').innerText=isLogin?'Login':'Continue'; 
+            document.getElementById('reg-fields')?.classList.toggle('hidden',isLogin); 
+            document.getElementById('forgot-btn')?.classList.toggle('hidden',!isLogin); 
+            document.getElementById('auth-tabs')?.classList.toggle('hidden',isLogin);
+            if(!isLogin) setAgeTab('adult');
+        }
+
+        function setAgeTab(type) {
+            isMinorRoute = (type === 'minor');
+            document.getElementById('minor-fields').classList.toggle('hidden', type !== 'minor');
+            document.getElementById('id-upload-container').classList.toggle('hidden', type === 'minor' && document.getElementById('role').value === 'developer');
+            document.getElementById('tab-adult').className = type === 'adult' ? 'pb-2 border-b-2 border-blue-500 font-bold text-white w-1/2 transition-colors' : 'pb-2 text-slate-400 font-bold border-b border-slate-700 w-1/2 transition-colors';
+            document.getElementById('tab-minor').className = type === 'minor' ? 'pb-2 border-b-2 border-blue-500 font-bold text-white w-1/2 transition-colors' : 'pb-2 text-slate-400 font-bold border-b border-slate-700 w-1/2 transition-colors';
+            if(type === 'minor') document.getElementById('role').value = 'developer';
+        }
+
+        function checkSchoolLogic(){ 
+            const r=document.getElementById('role').value; 
+            if(!isMinorRoute) document.getElementById('id-upload-container').classList.toggle('hidden',r!=='developer'); 
+            else document.getElementById('id-upload-container').classList.add('hidden');
+        }
+        
+        document.getElementById('auth-form').onsubmit = async (e) => {
+            e.preventDefault(); let opt={method:'POST'}; tempLoginEmail = document.getElementById('email').value;
+            if(isLogin) { opt.body=JSON.stringify({email:document.getElementById('email').value,password:document.getElementById('password').value}); opt.headers=apiHeaders; } 
+            else { 
+                const fd = new FormData(); 
+                ['email','name','dob','schoolName','gradeOrYear','role', 'phone'].forEach(i=>fd.append(i,document.getElementById(i).value)); 
+                if(document.getElementById('password').value) fd.append('password', document.getElementById('password').value); 
+                
+                if(isMinorRoute) {
+                    ['parentName', 'parentEmail', 'parentUpi'].forEach(i => fd.append(i === 'parentName' ? 'parent_name' : (i === 'parentEmail' ? 'parent_email' : 'parent_upi_id'), document.getElementById(i).value));
+                } else if(document.getElementById('role').value==='developer') {
+                    fd.append('idCard',document.getElementById('idCard').files[0]); 
+                }
+                opt.body=fd; 
+            }
+            try{ 
+                const ep = isLogin ? '/api/login' : '/api/register';
+                const r=await fetch(ep,opt); const d=await r.json(); 
+                if(d.error === 'needs_otp') { document.getElementById('otp-modal')?.classList.remove('hidden'); return; }
+                if(d.error) return showToast(d.error,'error'); 
+                if(!isLogin){showToast('Registered! Please enter the WhatsApp OTP to verify.','success'); document.getElementById('otp-modal')?.classList.remove('hidden'); }
+                else{localStorage.setItem('token',d.token);showToast('Logged in!');loadApp();} 
+            }catch(e){showToast('Network error','error');}
+        };
+
+        async function verifyPhoneOtp() {
+            const otp = document.getElementById('otp-input').value; if(!otp) return;
+            const res = await fetch('/api/verify-phone', { method:'POST', headers: apiHeaders, body:JSON.stringify({email: tempLoginEmail, otp}) });
+            const data = await res.json(); if(data.error) return showToast(data.error, 'error');
+            showToast('WhatsApp verified! Please click Login to enter.'); closeModals(); toggleAuthMode(true);
+        }
+
+        async function loadApp() {
+            if(!getToken()) return; 
+            document.getElementById('auth-view')?.classList.add('hidden'); document.getElementById('landing-page')?.classList.add('hidden'); document.getElementById('logout-btn')?.classList.remove('hidden'); document.getElementById('nav-feedback-btn')?.classList.remove('hidden');
+            try {
+                const res=await fetch('/api/me',{headers:{'Authorization':`Bearer ${getToken()}`}}); 
+                if(!res.ok) throw new Error("Session expired"); currentUser=await res.json();
+                
+                const badge = document.getElementById('user-badge');
+                if(badge) { badge.innerText=currentUser.isAdmin?'Admin':(currentUser.role==='buyer'?'Buyer':'Developer'); badge.classList.remove('hidden'); }
+                
+                if(currentUser.role==='developer'){ 
+                    const wallBal = document.getElementById('payments-wallet-balance');
+                    if(wallBal) wallBal.innerText = `₹${currentUser.walletBalance}`;
+                }
+
+                if(currentUser.isAdmin){ 
+                    document.getElementById('admin-dashboard')?.classList.remove('hidden'); switchAdminTab('approvals'); 
+                } else { 
+                    document.getElementById('dashboard-view')?.classList.remove('hidden'); 
+                    if (currentUser.isRejected) document.getElementById('rejection-banner')?.classList.remove('hidden');
+                    else if (!currentUser.isVerified && currentUser.role === 'developer') document.getElementById('verification-banner')?.classList.remove('hidden');
+                    if(currentUser.role==='buyer') { document.getElementById('nav-post-btn')?.classList.remove('hidden'); document.getElementById('btn-tab-payments')?.classList.add('hidden'); }
+                    else { document.getElementById('btn-tab-proposals')?.classList.remove('hidden'); document.getElementById('public-board-container')?.classList.remove('hidden'); loadPublicJobs(); } 
+                    switchUserTab('overview'); loadMyJobs(); 
+                }
+            } catch(e) { console.error(e); logout(); }
+        }
+
+        // Stats Overview
+        async function loadStats() {
+            const r = await fetch('/api/stats', {headers:{'Authorization':`Bearer ${getToken()}`}}); const stats = await r.json(); const c = document.getElementById('stats-container');
+            if(currentUser.role === 'developer') {
+                c.innerHTML = `<div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Earnings</p><p class="text-4xl font-black text-green-400 mt-2">₹${stats.earnings}</p></div><div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Ongoing Projects</p><p class="text-4xl font-black text-white mt-2">${stats.ongoing}</p></div><div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Proposals Sent</p><p class="text-4xl font-black text-white mt-2">${stats.proposals}</p></div>`;
+            } else {
+                 c.innerHTML = `<div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Posted Projects</p><p class="text-4xl font-black text-white mt-2">${stats.posted}</p></div><div class="glass-card p-6 rounded-2xl border border-slate-700 shadow-lg"><p class="text-slate-400 text-sm font-bold uppercase tracking-wider">Money Given</p><p class="text-4xl font-black text-green-400 mt-2">₹${stats.moneyGiven}</p></div>`;
+            }
+        }
+
+        async function loadProposals() {
+            const r = await fetch('/api/my-proposals', {headers:{'Authorization':`Bearer ${getToken()}`}}); const props = await r.json();
+            document.getElementById('proposals-list').innerHTML = props.length === 0 ? '<p class="text-slate-500">No proposals sent yet.</p>' : props.map(p => `<div class="glass-card p-5 rounded-2xl border border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><h3 class="font-bold text-white text-lg mb-1">${p.jobTitle}</h3><p class="text-sm text-slate-400 line-clamp-2 max-w-2xl">${p.message}</p></div><div class="flex flex-col items-end shrink-0"><span class="text-green-400 font-black text-lg">₹${p.amount}</span><span class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-300 uppercase tracking-widest mt-2">${p.jobStatus.replace('_',' ')}</span></div></div>`).join('');
+        }
+
+        async function loadUsersList() {
+            const r = await fetch('/api/users-list', {headers:{'Authorization':`Bearer ${getToken()}`}}); const users = await r.json();
+            document.getElementById('community-list').innerHTML = users.length === 0 ? '<p class="text-slate-500">No users found.</p>' : users.map(u => `<div class="glass-card p-6 rounded-2xl border border-slate-700 flex flex-col items-center text-center"><div class="w-16 h-16 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-full mb-4 flex items-center justify-center text-xl font-black text-white">${u.name.charAt(0)}</div><h3 class="font-bold text-white text-lg">${u.name}</h3><p class="text-[10px] text-blue-400 uppercase tracking-widest font-bold mb-2">${u.role}</p><p class="text-sm text-slate-400 mb-6">${u.schoolName}</p><button onclick="viewProfile(${u.id})" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition">View Profile</button></div>`).join('');
+        }
+
+        async function loadMyProfile() {
+            const r=await fetch(`/api/profile/${currentUser.id}`,{headers:{'Authorization':`Bearer ${getToken()}`}}); const d=await r.json(); 
+            document.getElementById('my-profile-name').innerText=d.name; document.getElementById('my-profile-role').innerText=d.role;
+            document.getElementById('my-followers').innerText=d.followers; document.getElementById('my-following').innerText=d.following;
+            document.getElementById('my-profile-reviews').innerHTML=d.reviews.length===0?'<p class="text-sm text-slate-500 mt-4">No reviews yet.</p>':d.reviews.map(x=>`<div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-3"><p class="text-sm font-bold text-slate-200 mb-1">${x.title}</p><p class="text-yellow-400 text-sm mb-2">${'★'.repeat(x.reviewScore)}${'☆'.repeat(5-x.reviewScore)}</p><p class="text-sm text-slate-400 italic">"${x.reviewText}"</p></div>`).join('');
+        }
+
+        async function viewProfile(id){ 
+            const r=await fetch(`/api/profile/${id}`,{headers:{'Authorization':`Bearer ${getToken()}`}}); const d=await r.json(); 
+            document.getElementById('prof-name').innerText=d.name; document.getElementById('prof-school').innerText=`${d.gradeOrYear} @ ${d.schoolName}`; 
+            document.getElementById('prof-rating').innerText=d.avgRating; document.getElementById('prof-jobs-count').innerText=`(${d.reviews.length} completed jobs)`; 
+            document.getElementById('prof-followers').innerText=d.followers; document.getElementById('prof-following').innerText=d.following;
+            let btnHtml = id !== currentUser.id ? `<button onclick="toggleFollow(${id})" class="w-full py-2 mt-2 mb-4 rounded-xl font-bold transition-all ${d.isFollowing ? 'bg-slate-700 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'}">${d.isFollowing ? 'Unfollow' : 'Follow'}</button>` : '';
+            document.getElementById('prof-follow-btn-container').innerHTML = btnHtml;
+            document.getElementById('prof-reviews').innerHTML=d.reviews.length===0?'<p class="text-sm text-slate-500">No reviews.</p>':d.reviews.map(x=>`<div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700 mb-2"><p class="text-xs font-bold text-slate-300 mb-1">${x.title}</p><p class="text-yellow-400 text-sm mb-1">${'★'.repeat(x.reviewScore)}${'☆'.repeat(5-x.reviewScore)}</p><p class="text-sm text-slate-400 italic">"${x.reviewText}"</p></div>`).join(''); 
+            document.getElementById('profile-modal')?.classList.remove('hidden'); 
+        }
+
+        async function toggleFollow(id) {
+            await fetch(`/api/follow/${id}`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }});
+            viewProfile(id); if(document.getElementById('user-tab-profile').classList.contains('hidden') === false) loadMyProfile();
+        }
+
+        // PROFILE SETTINGS & DELETE ACCOUNT
+        function openProfileSettings() {
+            document.getElementById('edit-name').value = currentUser.name; document.getElementById('edit-email').value = currentUser.email;
+            document.getElementById('edit-phone').value = currentUser.phone; document.getElementById('edit-dob').value = currentUser.dob || ''; 
+            document.getElementById('edit-upi').value = currentUser.upiId || currentUser.parent_upi_id || '';
+            document.getElementById('edit-current-pass').value = ''; document.getElementById('edit-new-pass').value = '';
+            if(currentUser.role === 'developer') { document.getElementById('edit-dev-fields')?.classList.remove('hidden'); document.getElementById('edit-school').value = currentUser.schoolName; document.getElementById('edit-grade').value = currentUser.gradeOrYear; }
+            else { document.getElementById('edit-dev-fields')?.classList.add('hidden'); }
+        }
+        
+        document.getElementById('edit-profile-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault(); const fd = new FormData(); ['name', 'email', 'phone', 'dob'].forEach(id => fd.append(id, document.getElementById(`edit-${id}`).value));
+            if(currentUser.role === 'developer') { ['school', 'grade'].forEach(id => fd.append(id==='school'?'schoolName':'gradeOrYear', document.getElementById(`edit-${id}`).value)); if(document.getElementById('edit-idCard').files[0]) fd.append('idCard', document.getElementById('edit-idCard').files[0]); }
+            const res = await fetch('/api/profile/edit', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` }, body: fd });
+            if(document.getElementById('edit-upi').value) await fetch('/api/profile/upi', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${getToken()}`}, body: JSON.stringify({upiId: document.getElementById('edit-upi').value}) });
+            const data = await res.json(); if(data.error) return showToast(data.error, 'error'); if(data.emailChanged) showToast('Email updated. Re-verify in terminal.', 'success'); else showToast('Profile updated!'); loadApp();
+        });
+
+        async function changePasswordInsideProfile() {
+            const c = document.getElementById('edit-current-pass').value, n = document.getElementById('edit-new-pass').value; if(!c || !n) return showToast('Fill password fields', 'error');
+            const res = await fetch('/api/profile/password', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${getToken()}`}, body: JSON.stringify({currentPassword: c, newPassword: n}) });
+            const data = await res.json(); if(data.error) return showToast(data.error, 'error'); showToast('Password changed!'); document.getElementById('edit-current-pass').value=''; document.getElementById('edit-new-pass').value='';
+        }
+
+        async function deleteMyAccount() {
+            customConfirm("Permanently Delete Account?", "This action cannot be undone. All your data will be wiped.", async () => {
+                await fetch('/api/account', { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } }); logout();
+            });
+        }
+
+        // JOBS
+        function openPostJobModal(){ document.getElementById('post-job-modal')?.classList.remove('hidden'); }
+        async function postJob(){ const t=document.getElementById('job-title').value, d=document.getElementById('job-desc').value, b=document.getElementById('job-budget').value; if(!t||!d||!b) return showToast('Fill all fields','error'); await fetch('/api/jobs',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({title:t,description:d,budget:b})}); showToast('Project Published!'); closeModals(); ['job-title','job-desc','job-budget'].forEach(i=>document.getElementById(i).value=''); loadMyJobs(); switchUserTab('overview'); }
+        async function deleteJob(id) { customConfirm("Delete Project?", "Are you sure you want to delete this open project?", async () => { await fetch(`/api/jobs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } }); showToast('Project deleted.'); loadMyJobs(); switchUserTab('overview'); }); }
+        function getStatusColor(s){ const c={'open':'bg-slate-700/50 text-slate-300','awaiting_payment':'bg-yellow-900/50 text-yellow-400 border border-yellow-700/50','in_progress':'bg-blue-900/50 text-blue-300','in_review':'bg-purple-900/50 text-purple-300','completed':'bg-green-900/50 text-green-400'}; return c[s]||'bg-slate-700 text-slate-300'; }
+
+        async function loadMyJobs(){
+            const r=await fetch('/api/my-jobs',{headers:{'Authorization':`Bearer ${getToken()}`}}); const jobs=await r.json(); const board = document.getElementById('job-board'); if(!board) return;
+            board.innerHTML=jobs.length===0?`<p class="text-slate-500 col-span-2">No active projects.</p>`:jobs.map(job=>`
+                <div class="glass-card p-6 rounded-2xl relative ${job.status === 'completed' ? 'opacity-70' : ''}">
+                    ${currentUser.role==='buyer' && job.status==='open' ? `<button onclick="deleteJob(${job.id})" class="absolute top-4 right-4 text-slate-500 hover:text-red-400 font-bold text-xl">&times;</button>` : ''}
+                    <div class="flex justify-between items-start mb-2 pr-6"><h3 class="font-bold text-lg ${job.status === 'completed' ? 'text-green-400' : 'text-white'}">${job.title}</h3><span class="bg-slate-800 text-white font-bold px-3 py-1 rounded-full border border-slate-600 text-sm">₹${job.budget}</span></div>
+                    <p class="text-sm text-slate-400 mb-4 line-clamp-2">${job.status === 'completed' ? 'Archived for privacy.' : job.description}</p>
+                    <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-700/50">
+                        <span class="text-[10px] font-bold px-3 py-1.5 ${getStatusColor(job.status)} rounded-lg uppercase tracking-wider">${job.status.replace('_',' ')}</span>
+                        ${currentUser.role==='buyer'&&job.status==='open'?`<button onclick="viewBids(${job.id})" class="text-sm font-bold text-blue-400 hover:underline">View Bids (${job.bidCount})</button>`:''}
+                        ${job.status!=='open'?`<button onclick="openWorkspace(${job.id})" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-blue-500">Workspace</button>`:''}
+                    </div>
+                </div>`).join('');
+        }
+
+        async function loadPublicJobs(){
+            const r=await fetch('/api/jobs',{headers:{'Authorization':`Bearer ${getToken()}`}}); const jobs=await r.json(); const pubBoard = document.getElementById('public-job-board'); if(!pubBoard) return;
+            pubBoard.innerHTML=jobs.map(j=>`<div class="glass-card p-6 rounded-2xl relative overflow-hidden"><div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-blue-500"></div><div class="flex justify-between items-start mb-2 pl-2"><h3 class="font-bold text-xl text-white">${j.title}</h3><span class="bg-green-900/50 border border-green-700/50 text-green-400 font-black px-3 py-1 rounded-full text-sm">₹${j.budget}</span></div><p class="text-sm text-slate-400 mb-4 pl-2">${j.description}</p><div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-xl mb-4 text-xs text-slate-400 flex justify-between items-center pl-2"><span>👤 <button onclick="viewProfile(${j.buyerId})" class="font-bold text-blue-400 hover:underline">${j.buyerName}</button> <br> 🏫 ${j.buyerSchool}</span></div><div class="pl-2">${currentUser.isVerified?`<button onclick="openBidModal(${j.id})" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl hover:bg-blue-500">Place Bid</button>`:`<button class="w-full bg-slate-700 text-slate-500 font-bold py-2 rounded-xl" disabled>Verify to Bid</button>`}</div></div>`).join('');
+        }
+
+        // BIDS
+        function openBidModal(id){ 
+            if(!currentUser.upiId && !currentUser.parent_upi_id) { showToast("Add a UPI ID in Settings first to receive payments.", "error"); switchUserTab('settings'); return; }
+            document.getElementById('bid-job-id').value=id; document.getElementById('bid-amount').value = ''; document.getElementById('bid-fee-text').classList.add('hidden'); document.getElementById('bid-modal')?.classList.remove('hidden'); 
+        }
+        function calculateFee() {
+            const amt = parseFloat(document.getElementById('bid-amount').value);
+            const feeText = document.getElementById('bid-fee-text');
+            if(amt > 0) {
+                const fee = Math.floor(amt * 0.1);
+                feeText.innerText = `Platform Fee (10%): -₹${fee}. You will receive: ₹${amt - fee}.`;
+                feeText.classList.remove('hidden');
+            } else { feeText.classList.add('hidden'); }
+        }
+        async function submitBid(){ const j=document.getElementById('bid-job-id').value, a=document.getElementById('bid-amount').value, m=document.getElementById('bid-message').value; if(!a||!m) return showToast('Enter all','error'); await fetch('/api/bids',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({jobId:j,amount:a,message:m})}); showToast('Bid Placed!'); closeModals(); switchUserTab('overview'); }
+        async function viewBids(id){ const r=await fetch(`/api/jobs/${id}/bids`,{headers:{'Authorization':`Bearer ${getToken()}`}}); const b=await r.json(); document.getElementById('bids-list').innerHTML=b.length===0?'<p class="text-slate-500">No bids yet.</p>':b.map(x=>`<div class="border border-slate-700 rounded-2xl p-5 bg-slate-800/50 mb-4"><div class="flex justify-between items-center mb-2"><p class="font-bold text-white"><button onclick="viewProfile(${x.developerId})" class="text-blue-400 hover:underline" title="View Full Profile & Reviews">${x.devName}</button> <br><span class="text-xs text-slate-400 font-normal">🏫 ${x.devSchool}</span></p><span class="font-black text-green-400 bg-green-900/50 px-3 py-1 rounded-full text-sm border border-green-700/50">Bids ₹${x.amount}</span></div><p class="text-sm text-slate-300 mb-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700">${x.message}</p><button onclick="acceptBid(${x.id})" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow hover:bg-blue-500">Accept Bid & Hire</button></div>`).join(''); document.getElementById('view-bids-modal').classList.remove('hidden'); }
+        
+        async function acceptBid(id){ 
+            if(!currentUser.upiId && !currentUser.parent_upi_id) { showToast("Please add your UPI ID in Settings first before hiring.", "error"); switchUserTab('settings'); return; }
+            customConfirm("Hire Developer?", "Project will move to Escrow. You must confirm payment via UTR.", async () => {
+                await fetch(`/api/bids/${id}/accept`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('Developer Hired! Please fund escrow in workspace.'); closeModals(); loadMyJobs(); switchUserTab('overview');
+            });
+        }
+
+        // WORKSPACE
+        async function openWorkspace(id){ 
+            currentWorkspaceJobId=id; switchUserTab('workspace');
+            document.getElementById('ws-placeholder')?.classList.add('hidden'); document.getElementById('ws-content')?.classList.remove('hidden');
+            await loadWorkspaceData(); if(chatInterval) clearInterval(chatInterval); chatInterval=setInterval(loadWorkspaceData,3000); 
+        }
+
+        async function submitUtrFunding() {
+            const utr = document.getElementById('payment-utr').value;
+            if (utr.length !== 12) return showToast('Please enter a valid 12-digit UTR', 'error');
+            await fetch(`/api/jobs/${currentWorkspaceJobId}/fund-utr`, { method: 'POST', headers: Object.assign({'Authorization': `Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({ utr }) });
+            showToast('UTR Submitted! Admin will verify shortly.');
+            loadWorkspaceData(); loadMyJobs();
+        }
+
+        async function loadWorkspaceData(){ 
+            if(!currentWorkspaceJobId) return; 
+            const r=await fetch(`/api/jobs/${currentWorkspaceJobId}/workspace`,{headers:{'Authorization':`Bearer ${getToken()}`}}); 
+            if(!r.ok) { return showToast("Workspace error.", "error"); }
+            const {job,messages}=await r.json(); 
+            
+            const titleEl = document.getElementById('ws-title'); if(titleEl) titleEl.innerText=job.title; 
+            const se=document.getElementById('ws-status'); if(se) { se.innerText=job.status.replace('_',' '); se.className=`px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase ${getStatusColor(job.status)}`; }
+            
+            const cb=document.getElementById('ws-chat-box'); 
+            if(cb) {
+                const iab=cb.scrollHeight-cb.scrollTop===cb.clientHeight; 
+                cb.innerHTML=messages.map(m=>`<div class="flex flex-col ${m.senderId===currentUser.id?'items-end':'items-start'}"><span class="text-[10px] text-slate-500 mb-1 px-1">${m.senderName}</span><div class="px-4 py-2 rounded-2xl max-w-[80%] ${m.senderId===currentUser.id?'bg-blue-600 text-white rounded-br-none':'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'}"><p class="text-sm">${m.text}</p></div></div>`).join(''); 
+                if(iab) cb.scrollTop=cb.scrollHeight; 
+            }
+            
+            ['ws-dev-actions', 'ws-buyer-actions', 'ws-deliverable-box', 'ws-review-box', 'ws-payment-box', 'ws-dev-payment-waiting', 'ws-dev-payout-area'].forEach(id => document.getElementById(id)?.classList.add('hidden'));
+
+            if(job.status === 'awaiting_payment') {
+                if(currentUser.role === 'buyer') document.getElementById('ws-payment-box')?.classList.remove('hidden'); 
+                else document.getElementById('ws-dev-payment-waiting')?.classList.remove('hidden'); return;
+            }
+            if(job.status==='completed'){ 
+                const bx=currentUser.role==='buyer'?'ws-buyer-actions':'ws-dev-actions'; document.getElementById(bx)?.classList.remove('hidden'); document.getElementById('ws-deliverable-box')?.classList.remove('hidden'); const link = document.getElementById('ws-deliverable-link'); if(link) link.href=job.deliverableUrl; 
+                if(currentUser.role === 'developer') {
+                    const payoutArea = document.getElementById('ws-dev-payout-area');
+                    payoutArea.classList.remove('hidden');
+                    if(job.payoutRequested === 1) payoutArea.innerHTML = '<p class="text-yellow-400 font-bold text-sm text-center">Payout Requested. Admin is processing.</p>';
+                    else if(job.payoutRequested === 2) payoutArea.innerHTML = `<p class="text-green-400 font-bold text-sm text-center">Payout Sent! UTR: ${job.paidOutUtr}</p>`;
+                    else payoutArea.innerHTML = `<button onclick="requestProjectPayout(${job.id})" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-500">Request Payout for this Project</button>`;
+                }
+                return; 
+            } 
+            
+            if(currentUser.role==='developer') document.getElementById('ws-dev-actions')?.classList.remove('hidden'); 
+            else if(currentUser.role==='buyer'&&job.status==='in_review'){ document.getElementById('ws-buyer-actions')?.classList.remove('hidden'); document.getElementById('ws-deliverable-box')?.classList.remove('hidden'); document.getElementById('ws-review-box')?.classList.remove('hidden'); const link = document.getElementById('ws-deliverable-link'); if(link) link.href=job.deliverableUrl; } 
+        }
+        
+        async function sendWorkspaceMessage(){ const i=document.getElementById('ws-msg-input'); const t=i.value.trim(); if(!t) return; i.value=''; await fetch(`/api/jobs/${currentWorkspaceJobId}/messages`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({text:t})}); loadWorkspaceData(); }
+        async function submitWork(){ const u=document.getElementById('ws-submit-url').value; if(!u) return showToast('Enter URL','error'); await fetch(`/api/jobs/${currentWorkspaceJobId}/submit`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({url:u})}); showToast('Work submitted!'); loadWorkspaceData(); loadMyJobs(); switchUserTab('overview'); }
+        async function completeJob(){ const s=document.getElementById('ws-review-score').value, r=document.getElementById('ws-review-text').value; if(!r) return showToast('Write review','error'); await fetch(`/api/jobs/${currentWorkspaceJobId}/complete`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({score:s,review:r})}); showToast('Job Completed!'); loadWorkspaceData(); loadMyJobs(); switchUserTab('overview'); }
+        async function requestProjectPayout(id) { await fetch(`/api/jobs/${id}/request-payout`, { method: 'POST', headers: Object.assign({'Authorization': `Bearer ${getToken()}`}, apiHeaders) }); showToast('Payout requested to admin.'); loadWorkspaceData(); }
+
+        // UTILS & MISC
+        function openFeedbackModal() { document.getElementById('feedback-modal')?.classList.remove('hidden'); }
+        async function submitFeedback() { const t = document.getElementById('feedback-type').value; const m = document.getElementById('feedback-message').value; if(!m) return showToast('Please write a message', 'error'); await fetch('/api/feedbacks', { method: 'POST', headers: Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({ type: t, message: m }) }); showToast('Feedback submitted! Thank you.'); closeModals(); document.getElementById('feedback-message').value = ''; }
+        function openReportModal(id){ document.getElementById('report-user-id').value=id; document.getElementById('report-modal')?.classList.remove('hidden'); }
+        async function submitReport(){ const i=document.getElementById('report-user-id').value, r=document.getElementById('report-reason').value; if(!r) return; await fetch('/api/report',{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders),body:JSON.stringify({reportedUserId:i,reason:r})}); showToast('Report sent.'); closeModals(); }
+
+        function openForgotPassword(){ document.getElementById('auth-view')?.classList.add('hidden'); document.getElementById('forgot-modal')?.classList.remove('hidden'); }
+        async function requestResetToken(){ const e=document.getElementById('forgot-email').value; if(!e) return showToast('Enter email','error'); await fetch('/api/forgot-password',{method:'POST',headers:apiHeaders,body:JSON.stringify({email:e})}); showToast('Token logged in terminal'); document.getElementById('forgot-step-1')?.classList.add('hidden'); document.getElementById('forgot-step-2')?.classList.remove('hidden'); }
+        async function submitNewPassword(){ const t=document.getElementById('reset-token').value, n=document.getElementById('reset-new-pass').value; if(!t||!n) return showToast('Fill all fields','error'); const r=await fetch('/api/reset-password',{method:'POST',headers:apiHeaders,body:JSON.stringify({token:t,newPassword:n})}); const d=await r.json(); if(d.error) return showToast(d.error,'error'); showToast('Password updated! Login.'); closeModals(); toggleAuthMode(true); }
+
+        // ADMIN
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('button[id^="tab-"]').forEach(b => { b.classList.remove('border-b-2', 'border-blue-500', 'bg-slate-800/50', 'text-white'); b.classList.add('text-slate-400'); });
+            document.getElementById(`view-${tabName}`)?.classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`); if(activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('border-b-2', 'border-blue-500', 'bg-slate-800/50', 'text-white'); }
+            loadAdminData();
+        }
+
+        async function loadAdminData(){ 
+            if(!currentUser?.isAdmin) return;
+            
+            let res=await fetch('/api/admin/pending',{headers:{'Authorization':`Bearer ${getToken()}`}}); let pend=await res.json(); 
+            const pendList = document.getElementById('admin-pending-list');
+            if(pendList) pendList.innerHTML=pend.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No pending adults.</td></tr>`:pend.map(u=>`
+            <tr>
+                <td class="p-4 text-white">
+                    <p class="font-bold text-blue-400">Student: ${u.name} ${u.isReverify?'<span class="text-xs bg-yellow-500 px-1 rounded text-black">Update</span>':''}</p>
+                    <p class="text-xs text-slate-400">DOB: ${u.dob || 'N/A'}</p>
+                </td>
+                <td class="p-4 text-slate-300">
+                    <p>${u.gradeOrYear} @ ${u.schoolName}</p>
+                    <p class="text-xs text-slate-400 mt-1">${u.email}</p>
+                </td>
+                <td class="p-4 flex flex-col gap-2">
+                    <a href="${u.idCardUrl}" target="_blank" class="text-blue-400 hover:underline text-sm">📄 Student ID</a>
+                </td>
+                <td class="p-4">
+                    <div class="flex gap-2">
+                        <button onclick="approveUser(${u.id})" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-500">Approve</button>
+                        <button onclick="rejectUser(${u.id})" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-500">Reject</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+            
+            let uRes=await fetch('/api/admin/users',{headers:{'Authorization':`Bearer ${getToken()}`}}); let users=await uRes.json();
+            const userList = document.getElementById('admin-users-list');
+            if(userList) userList.innerHTML=users.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No users.</td></tr>`:users.map(u=>`<tr><td class="p-4 text-white"><p class="font-bold">${u.name}</p><span class="text-xs px-2 py-1 bg-slate-700 rounded uppercase">${u.role}</span></td><td class="p-4 text-sm text-slate-300"><p>${u.email} ${u.isEmailVerified?'✅':'❌'}</p><p>${u.phone} ${u.isPhoneVerified?'✅':'❌'}</p></td><td class="p-4 text-slate-300 font-mono">${u.upiId||'Not Set'}</td><td class="p-4"><button onclick="adminDeleteUser(${u.id})" class="text-red-400 hover:underline">Delete</button></td></tr>`).join('');
+
+            let bRes=await fetch('/api/admin/banking',{headers:{'Authorization':`Bearer ${getToken()}`}}); let bank=await bRes.json();
+            const vol = document.getElementById('admin-vol'); if(vol) vol.innerText = `₹${bank.volume}`; 
+            const prof = document.getElementById('admin-prof'); if(prof) prof.innerText = `₹${bank.profit}`;
+            
+            const escList = document.getElementById('admin-escrow-list');
+            if(escList) escList.innerHTML=bank.escrowFunds.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No funds currently in escrow.</td></tr>`:bank.escrowFunds.map(e=>`<tr><td class="p-4 text-white font-bold">${e.title}<br><span class="text-xs text-blue-400 uppercase">${e.status.replace('_',' ')}</span></td><td class="p-4 text-slate-300">${e.buyerName}</td><td class="p-4 text-slate-300">${e.devName}</td><td class="p-4 text-green-400 font-bold">₹${e.budget}<br><span class="text-xs text-slate-500">UTR: ${e.fundedUtr}</span></td></tr>`).join('');
+            
+            const payList = document.getElementById('admin-payouts-list');
+            if(payList) payList.innerHTML=bank.pendingPayouts.length===0?`<tr><td colspan="4" class="p-4 text-center text-slate-500">No pending payouts.</td></tr>`:bank.pendingPayouts.map(d=>`<tr><td class="p-4 text-white font-bold">${d.devName}</td><td class="p-4 text-slate-300 font-mono">${d.upiId||'No UPI'}</td><td class="p-4 text-green-400 font-bold">₹${Math.floor(d.budget * 0.9)} <span class="text-xs text-slate-500">(10% fee taken)</span></td><td class="p-4"><button onclick="payJob(${d.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 text-sm font-bold">Record UTR & Pay</button></td></tr>`).join('');
+
+            let fbRes=await fetch('/api/admin/feedbacks',{headers:{'Authorization':`Bearer ${getToken()}`}}); let fbs=await fbRes.json();
+            const fbList = document.getElementById('admin-feedbacks-list');
+            if(fbList) fbList.innerHTML=fbs.length===0?`<tr><td colspan="3" class="p-4 text-center text-slate-500">No feedbacks.</td></tr>`:fbs.map(f=>`<tr><td class="p-4"><p class="font-bold text-white">${f.name}</p></td><td class="p-4 text-blue-300 font-bold">${f.type}</td><td class="p-4 text-slate-300">${f.message}</td></tr>`).join('');
+            
+            let repRes=await fetch('/api/admin/reports',{headers:{'Authorization':`Bearer ${getToken()}`}}); let reports=await repRes.json(); 
+            const repList = document.getElementById('admin-reports-list');
+            if(repList) repList.innerHTML=reports.length===0?`<tr><td colspan="3" class="p-4 text-center text-slate-500">No reports.</td></tr>`:reports.map(r=>`<tr><td class="p-4"><p class="font-bold text-white">${r.reportedName}</p></td><td class="p-4 text-slate-300">By ${r.reporterName}: ${r.reason}</td><td class="p-4"><button onclick="adminDeleteUser(${r.reportedUserId})" class="bg-red-600 px-3 py-1 rounded text-white text-sm">Delete User</button></td></tr>`).join(''); 
+        }
+        
+        async function approveUser(id){ await fetch(`/api/admin/verify/${id}`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('Approved!'); loadAdminData(); }
+        async function rejectUser(id){ await fetch(`/api/admin/reject/${id}`,{method:'POST',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('ID Card Rejected.'); loadAdminData(); }
+        async function adminDeleteUser(id){ customConfirm("Delete User?", "Are you sure? This deletes them permanently.", async () => { await fetch(`/api/admin/users/${id}`,{method:'DELETE',headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders)}); showToast('User Deleted.'); loadAdminData(); }); }
+        
+        async function payJob(id){ 
+            const utr = prompt("Enter the 12-digit UTR for this payout:");
+            if(!utr || utr.length !== 12) return showToast("Valid 12-digit UTR required", "error");
+            await fetch(`/api/admin/pay-job/${id}`, {method:'POST', headers:Object.assign({'Authorization':`Bearer ${getToken()}`}, apiHeaders), body: JSON.stringify({utr})}); 
+            showToast('Developer paid and UTR recorded.'); 
+            loadAdminData(); 
+        }
+
+        function logout(){ localStorage.removeItem('token'); location.reload(); }
+        if (getToken()) loadApp();
+    </script>
+</body>
+</html>
